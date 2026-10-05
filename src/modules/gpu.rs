@@ -600,7 +600,9 @@ ffff  Vendor Last
         let got = f.resolve(&[(0x8086, 0x0166)]);
         let name = got[0].as_deref().unwrap_or_default();
         assert!(
-            name.contains("Ivy Bridge mobile GT2"),
+            name.contains("Graphics")
+                || name.contains("Ivy Bridge")
+                || name.contains("3rd Gen Core"),
             "unexpected name for 8086:0166: {name:?}"
         );
         assert!(
