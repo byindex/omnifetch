@@ -1,0 +1,16 @@
+pkgbase = omnifetch-git
+	pkgdesc = Extremely fast, modular, zero-overhead Linux system information fetch utility (built from git master)
+	pkgver = 0.1.0.r0.geb64fd9
+	pkgrel = 1
+	url = https://github.com/byindex/omnifetch
+	arch = x86_64
+	license = MIT
+	makedepends = cargo
+	makedepends = git
+	provides = omnifetch
+	conflicts = omnifetch
+	conflicts = omnifetch-bin
+	source = omnifetch::git+https://github.com/byindex/omnifetch.git
+	sha256sums = SKIP
+
+pkgname = omnifetch-git

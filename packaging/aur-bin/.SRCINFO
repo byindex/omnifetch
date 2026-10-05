@@ -1,0 +1,14 @@
+pkgbase = omnifetch-bin
+	pkgdesc = Extremely fast, modular, zero-overhead Linux system information fetch utility (precompiled binary)
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/byindex/omnifetch
+	arch = x86_64
+	license = MIT
+	provides = omnifetch
+	conflicts = omnifetch
+	conflicts = omnifetch-git
+	source = https://github.com/byindex/omnifetch/releases/download/v0.1.0/omnifetch-v0.1.0-linux-x86_64.tar.gz
+	sha256sums = 224505bc7771e2942d81be9c4a1c044be7e1c292cfd5f9ca19c10addc157f391
+
+pkgname = omnifetch-bin

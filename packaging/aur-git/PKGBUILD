@@ -1,0 +1,48 @@
+# Maintainer: byindex <tanktez1@gmail.com>
+pkgname=omnifetch-git
+pkgver=0.1.0.r0.geb64fd9
+pkgrel=1
+pkgdesc="Extremely fast, modular, zero-overhead Linux system information fetch utility (built from git master)"
+arch=('x86_64')
+url="https://github.com/byindex/omnifetch"
+license=('MIT')
+makedepends=('cargo' 'git')
+provides=('omnifetch')
+conflicts=('omnifetch' 'omnifetch-bin')
+source=('omnifetch::git+https://github.com/byindex/omnifetch.git')
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "${srcdir}/omnifetch"
+    git describe --long --tags --match="v*" 2>/dev/null | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' || \
+    printf "0.1.0.r%s.g%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+    cd "${srcdir}/omnifetch"
+    cargo build --release --locked
+}
+
+check() {
+    cd "${srcdir}/omnifetch"
+    cargo test --release --locked
+}
+
+package() {
+    cd "${srcdir}/omnifetch"
+
+    # Install binary
+    install -Dm755 target/release/omnifetch "${pkgdir}/usr/bin/omnifetch"
+
+    # Install alias wizard
+    install -Dm755 setup-aliases.sh "${pkgdir}/usr/share/omnifetch/setup-aliases.sh"
+
+    # Install shell completions generated on-the-fly
+    "${srcdir}/omnifetch/target/release/omnifetch" --completion bash | install -Dm644 /dev/stdin "${pkgdir}/usr/share/bash-completion/completions/omnifetch"
+    "${srcdir}/omnifetch/target/release/omnifetch" --completion zsh  | install -Dm644 /dev/stdin "${pkgdir}/usr/share/zsh/site-functions/_omnifetch"
+    "${srcdir}/omnifetch/target/release/omnifetch" --completion fish | install -Dm644 /dev/stdin "${pkgdir}/usr/share/fish/vendor_completions.d/omnifetch.fish"
+
+    # Install documentation & license
+    install -Dm644 README.md "${pkgdir}/usr/share/doc/omnifetch/README.md"
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/omnifetch/LICENSE"
+}

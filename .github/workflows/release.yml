@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release Binary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Prepare release archive
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          PKG_NAME="omnifetch-${VERSION}-linux-x86_64"
+          DIST_DIR="target/dist/${PKG_NAME}"
+          
+          mkdir -p "${DIST_DIR}/completions"
+          
+          # Copy binaries and scripts
+          cp target/release/omnifetch "${DIST_DIR}/"
+          cp setup-aliases.sh "${DIST_DIR}/"
+          chmod +x "${DIST_DIR}/omnifetch" "${DIST_DIR}/setup-aliases.sh"
+          
+          # Copy documentation and license
+          cp README.md LICENSE "${DIST_DIR}/"
+          
+          # Generate shell completions
+          target/release/omnifetch --completion bash > "${DIST_DIR}/completions/omnifetch.bash"
+          target/release/omnifetch --completion zsh > "${DIST_DIR}/completions/_omnifetch"
+          target/release/omnifetch --completion fish > "${DIST_DIR}/completions/omnifetch.fish"
+          
+          # Create archive
+          cd target/dist
+          tar -czvf "${PKG_NAME}.tar.gz" "${PKG_NAME}"
+          sha256sum "${PKG_NAME}.tar.gz" > "${PKG_NAME}.tar.gz.sha256"
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/dist/*.tar.gz
+            target/dist/*.tar.gz.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
