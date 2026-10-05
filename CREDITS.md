@@ -46,14 +46,13 @@ The design of each fetch tool below informed module selection, ordering and
 layout. No code was copied.
 
 Onefetch      https://github.com/o2sh/onefetch            git module, Onefetch style
-Cpufetch      https://github.com/robinhargreaves/cpufetch  cpu rendering
-Hyfetch       https://github.com/andreansaraiva/hyfetch
-Nitch         https://github.com/nicolatos/nitch
-Catnap        https://github.com/lvyaoyu/catnap
-Macchina      https://github.com/SeptemberFoxworth/macchina
-Pfetch        https://github.com/dvander/pub
+Cpufetch      https://github.com/Dr-Noob/cpufetch         cpu rendering
+Hyfetch       https://github.com/hykilpikonna/hyfetch
+Nitch         https://github.com/ssleert/nitch
+Catnap        https://github.com/iinsertNameHere/catnap
+Macchina      https://github.com/Macchina-CLI/macchina
+Pfetch        https://github.com/dylanaraps/pfetch
 Neofetch      https://github.com/dylanaraps/neofetch
-Sysprint      https://github.com/antonionet             sysprint layout preset
 Paleofetch    https://github.com/otreblan/paleofetch
 
 

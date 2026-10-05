@@ -54,6 +54,19 @@ graphics, JSON export, per-module timings, completions for bash, zsh and fish.
 
 ## Installation
 
+### Cargo (crates.io)
+
+```bash
+cargo install omnifetch-rs
+```
+*(installs the `omnifetch` binary to your PATH)*
+
+### Arch Linux (AUR)
+
+Packages `omnifetch-bin` and `omnifetch-git` will be published to AUR as soon as new registrations open.
+
+### Building from Source
+
 ```bash
 git clone https://github.com/byindex/omnifetch
 cd omnifetch
@@ -104,7 +117,7 @@ Templating variables and functions: [docs/FUNCTIONS.md](docs/FUNCTIONS.md).
 
 ## Credits
 
-ASCII logos are taken and adapted from [Fastfetch](https://github.com/fastfetch-cli/fastfetch). Ideas and output formats are inspired by [Onefetch](https://github.com/o2sh/onefetch), [Cpufetch](https://github.com/robinhargreaves/cpufetch), [Hyfetch](https://github.com/andreansaraiva/hyfetch), [Nitch](https://github.com/nicolatos/nitch), [Catnap](https://github.com/lvyaoyu/catnap), [Macchina](https://github.com/SeptemberFoxworth/macchina), [Pfetch](https://github.com/dvander/pub), and [Neofetch](https://github.com/dylanaraps/neofetch).
+ASCII logos are taken and adapted from [Fastfetch](https://github.com/fastfetch-cli/fastfetch). Ideas and output formats are inspired by [Onefetch](https://github.com/o2sh/onefetch), [Cpufetch](https://github.com/Dr-Noob/cpufetch), [Hyfetch](https://github.com/hykilpikonna/hyfetch), [Nitch](https://github.com/ssleert/nitch), [Catnap](https://github.com/iinsertNameHere/catnap), [Macchina](https://github.com/Macchina-CLI/macchina), [Pfetch](https://github.com/dylanaraps/pfetch), and [Neofetch](https://github.com/dylanaraps/neofetch).
 
 Details in [CREDITS.md](CREDITS.md).
 

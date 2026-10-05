@@ -56,6 +56,19 @@ bash, zsh и fish.
 
 ## Установка
 
+### Cargo (crates.io)
+
+```bash
+cargo install omnifetch-rs
+```
+*(устанавливает бинарный файл `omnifetch` в систему)*
+
+### Arch Linux (AUR)
+
+Пакеты `omnifetch-bin` и `omnifetch-git` будут опубликованы в AUR сразу после открытия регистрации.
+
+### Сборка из исходников
+
 ```bash
 git clone https://github.com/byindex/omnifetch
 cd omnifetch
@@ -106,7 +119,7 @@ omnifetch --gen-config              # интерактивный TUI-конфи�
 
 ## Благодарности
 
-ASCII-логотипы взяты и адаптированы из [Fastfetch](https://github.com/fastfetch-cli/fastfetch). Идеи и форматы вывода вдохновлены [Onefetch](https://github.com/o2sh/onefetch), [Cpufetch](https://github.com/robinhargreaves/cpufetch), [Hyfetch](https://github.com/andreansaraiva/hyfetch), [Nitch](https://github.com/nicolatos/nitch), [Catnap](https://github.com/lvyaoyu/catnap), [Macchina](https://github.com/SeptemberFoxworth/macchina), [Pfetch](https://github.com/dvander/pub) и [Neofetch](https://github.com/dylanaraps/neofetch).
+ASCII-логотипы взяты и адаптированы из [Fastfetch](https://github.com/fastfetch-cli/fastfetch). Идеи и форматы вывода вдохновлены [Onefetch](https://github.com/o2sh/onefetch), [Cpufetch](https://github.com/Dr-Noob/cpufetch), [Hyfetch](https://github.com/hykilpikonna/hyfetch), [Nitch](https://github.com/ssleert/nitch), [Catnap](https://github.com/iinsertNameHere/catnap), [Macchina](https://github.com/Macchina-CLI/macchina), [Pfetch](https://github.com/dylanaraps/pfetch) и [Neofetch](https://github.com/dylanaraps/neofetch).
 
 Подробности — в [CREDITS.md](CREDITS.md).
 
