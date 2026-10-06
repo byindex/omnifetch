@@ -5,6 +5,7 @@
 > A fast, highly configurable and good-looking system information fetcher for Linux, written in Rust.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Crates.io](https://img.shields.io/crates/v/omnifetch-rs.svg)](https://crates.io/crates/omnifetch-rs)
 [![Rust](https://img.shields.io/badge/Rust-2024%2B-orange.svg)](https://www.rust-lang.org/)
 [![Speed](https://img.shields.io/badge/warm%20cache-2.0ms-brightgreen.svg)](https://github.com/byindex/omnifetch)
 [![Repo](https://img.shields.io/badge/github-byindex%2Fomnifetch-8da0cb?logo=github)](https://github.com/byindex/omnifetch)
@@ -14,16 +15,6 @@
 </p>
 
 ---
-
-## Benchmarks
-
-<p align="center">
-  <img src="assets/benchmark.png" alt="Omnifetch Benchmarks" width="850">
-</p>
-
-Measured on Arch Linux with hyperfine, static build, lower is better. Run
-`python3 benchmark.py` to reproduce on your own machine:
-[benchmark_results.md](benchmark_results.md).
 
 ## What it is
 
@@ -42,15 +33,13 @@ Details: [docs/CONFIG.md](docs/CONFIG.md) and [docs/FUNCTIONS.md](docs/FUNCTIONS
 peripherals are still probed live, in roughly 0.2 ms. How that works:
 [docs/DESIGN.md](docs/DESIGN.md).
 
-**2.0 ms** warm, **11-13 ms** for all modules uncached (up to 20 ms on cold disk IO). Measurements and how to
-repeat them: `python3 benchmark.py`, results in
-[benchmark_results.md](benchmark_results.md).
+**2.0 ms** warm, **11-13 ms** for all modules uncached (up to 20 ms on cold disk IO).
 
 **14 layout presets**, eight of them reproducing a competitor's output one to one, so
 speed can be compared on identical data: [docs/PRESETS.md](docs/PRESETS.md).
 
 **596 ASCII logos** with binary search, 6 themes, 8 gradients, Nerd Fonts, Kitty and Sixel
-graphics, JSON export, per-module timings, completions for bash, zsh and fish.
+graphics, SVG/HTML and JSON export, per-module timings, completions for bash, zsh and fish.
 
 ## Installation
 
@@ -102,6 +91,15 @@ omnifetch --gen-config              # interactive TUI generator
 
 File reference and TUI keys: [docs/CONFIG.md](docs/CONFIG.md).
 Templating variables and functions: [docs/FUNCTIONS.md](docs/FUNCTIONS.md).
+
+## Benchmarks
+
+<p align="center">
+  <img src="assets/benchmark.png" alt="Omnifetch Benchmarks" width="850">
+</p>
+
+- Details — [benchmark_results.md](benchmark_results.md)
+- Reproduce — [benchmark.py](benchmark.py)
 
 ## Documentation
 

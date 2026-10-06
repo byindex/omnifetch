@@ -346,8 +346,54 @@ fn main() {
         cfg,
         &cfg.style,
     );
+
+    if let Some(ref target) = cfg.export {
+        let (content, is_file) = match target.to_lowercase().as_str() {
+            "svg" => (omnifetch::export::to_svg(&text), false),
+            "html" => (omnifetch::export::to_html(&text), false),
+            other if other.ends_with(".svg") => (omnifetch::export::to_svg(&text), true),
+            other if other.ends_with(".html") || other.ends_with(".htm") => {
+                (omnifetch::export::to_html(&text), true)
+            }
+            other => {
+                eprintln!(
+                    "omnifetch: unsupported export target '{other}'. Use 'svg', 'html', or a file path ending in .svg or .html."
+                );
+                unsafe {
+                    libc::_exit(1);
+                }
+            }
+        };
+
+        if is_file {
+            if let Err(e) = std::fs::write(target, &content) {
+                eprintln!("omnifetch: failed to write {target}: {e}");
+                unsafe {
+                    libc::_exit(1);
+                }
+            }
+            eprintln!("omnifetch: exported output to {target}");
+        } else {
+            let _ = lock.write_all(content.as_bytes());
+            let _ = lock.flush();
+        }
+
+        if !cfg.no_cache && cache_dirty {
+            cache_obj.os_mtime = cache::detect_os_mtime();
+            cache_obj.packages_mtime = cache::detect_packages_mtime();
+            cache_obj.desktop_mtime = cache::detect_desktop_mtime();
+            cache_obj.audio_mtime = cache::detect_audio_mtime();
+            if cache_obj.modules.contains_key("devenv") {
+                cache_obj.devenv_mtime = cache::detect_devenv_mtime();
+            }
+            cache_obj.save();
+        }
+        unsafe {
+            libc::_exit(0);
+        }
+    }
+
     let _ = lock.write_all(text.as_bytes());
-    let _ = lock.write_all(b"\n");
     let _ = lock.flush();
 
     if !cfg.no_cache && cache_dirty {

@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use crate::module::ModuleOutput;
 
-pub const CACHE_VERSION: u32 = 12;
+pub const CACHE_VERSION: u32 = 13;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct WeatherCache {

@@ -13,13 +13,17 @@ _omnifetch() {{
     cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev="${{COMP_WORDS[COMP_CWORD-1]}}"
 
-    opts="-h --help -V --version -f --fast -a --all -j --json -c --config -m --modules -l --logo --logo-mini --logo-top --border --nerd --nerd-only -t --theme --list-themes --list-presets --gradient -i --image --image-cols --image-rows -p --preset -T --timing --no-cache --no-color --gen-config --gen-config-force --list-modules --git --network --completion --quotes-file --quotes"
+    opts="-h --help -V --version -f --fast -a --all -j --json -c --config -m --modules -l --logo --logo-mini --logo-top --border --nerd --nerd-only -t --theme --list-themes --list-presets --gradient -i --image --image-cols --image-rows -p --preset -T --timing --no-cache --no-color --gen-config --gen-config-force --list-modules --git --network --completion --quotes-file --quotes --export"
     presets="minimal compact detailed modern hardware fastfetch neofetch paleofetch catnap macchina sysprint nitch pfetch all"
     logos="{logos}"
     themes="catppuccin tokyo-night nord gruvbox dracula rose-pine"
     gradients="rainbow sunset cyberpunk synthwave fire ice matrix dracula"
 
     case "${{prev}}" in
+        --export)
+            COMPREPLY=( $(compgen -W "svg html" -- "${{cur}}") )
+            return 0
+            ;;
         -p|--preset)
             COMPREPLY=( $(compgen -W "${{presets}}" -- "${{cur}}") )
             return 0
@@ -123,6 +127,7 @@ _omnifetch() {{
         '(-T --timing)'{{-T,--timing}}'[Print per-module execution timings]' \
         '--no-cache[Disable caching completely (always fetch fresh data)]' \
         '--quotes-file[Custom quotes JSON or text file to load quotes from]:quotes file:_files' \
+        '--export[Export output as SVG or HTML ("svg", "html", or filename)]:export target:' \
         '--no-color[Disable colors]' \
         '--gen-config[Print default documented config.toml]' \
         '--gen-config-force[Overwrite existing config file without confirmation prompt]' \
@@ -162,6 +167,7 @@ complete -c omnifetch -s V -l version -d 'Print version'
 complete -c omnifetch -s f -l fast -d 'Minimal set of modules for highest speed'
 complete -c omnifetch -s a -l all -d 'Run all available system modules'
 complete -c omnifetch -s j -l json -d 'Print machine-readable JSON'
+complete -c omnifetch -l export -d 'Export output as SVG or HTML ("svg", "html", or filename)'
 complete -c omnifetch -s p -l preset -d 'Use built-in layout preset' -x -a 'minimal compact detailed modern hardware fastfetch neofetch paleofetch catnap macchina sysprint nitch pfetch all'
 complete -c omnifetch -s l -l logo -d 'Set distro logo' -x -a '{logos}'
 complete -c omnifetch -l logo-mini -d 'Use mini ASCII logo'

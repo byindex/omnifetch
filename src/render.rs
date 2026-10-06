@@ -295,7 +295,7 @@ fn prepare_logo(art: &str, color: bool) -> String {
     out
 }
 
-fn visible_width(s: &str) -> usize {
+pub fn visible_width(s: &str) -> usize {
     let mut len = 0;
     let mut in_escape = false;
     for c in s.chars() {

@@ -93,6 +93,7 @@ pub struct Config {
     pub bar: BarConfig,
     pub keys: HashMap<String, String>,
     pub format: HashMap<String, String>,
+    pub export: Option<String>,
     pub network_cfg: NetworkConfig,
     pub raw_config_content: Option<String>,
     pub warning: Option<String>,
@@ -123,6 +124,7 @@ impl Default for Config {
             gradient: None,
             git: false,
             quotes_file: None,
+            export: None,
             style: Style::default(),
             bar: BarConfig::default(),
             keys: HashMap::new(),
@@ -225,6 +227,7 @@ OPTIONS:
         --network          Enable modules requiring external internet requests (Public IP, Weather)
         --quotes-file <PATH> Custom quotes JSON or text file to load quotes from
     -j, --json             Print raw JSON instead of a table
+        --export <TARGET>  Export output as SVG or HTML (\"svg\", \"html\", or filename .svg/.html)
         --no-color         Disable colors (same as NO_COLOR=1)
     -h, --help             Print this help
     -V, --version          Print version
@@ -500,6 +503,13 @@ pub fn parse(args: &[String]) -> Parsed {
                 cfg.nerd_icons_only = true;
             }
             "--git" => cfg.git = true,
+            "--export" => match need(i, a, args) {
+                Ok(v) => {
+                    cfg.export = Some(v);
+                    i += 1;
+                }
+                Err(e) => return Parsed::Error(e),
+            },
             "--quotes-file" | "--quotes" => match need(i, a, args) {
                 Ok(v) => {
                     cfg.quotes_file = Some(PathBuf::from(v));

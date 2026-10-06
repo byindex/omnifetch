@@ -5,6 +5,7 @@
 > Быстрый, гибко настраиваемый и визуально приятный системный информатор для Linux, написанный на Rust.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Crates.io](https://img.shields.io/crates/v/omnifetch-rs.svg)](https://crates.io/crates/omnifetch-rs)
 [![Rust](https://img.shields.io/badge/Rust-2024%2B-orange.svg)](https://www.rust-lang.org/)
 [![Speed](https://img.shields.io/badge/warm%20cache-2.0ms-brightgreen.svg)](https://github.com/byindex/omnifetch)
 [![Repo](https://img.shields.io/badge/github-byindex%2Fomnifetch-8da0cb?logo=github)](https://github.com/byindex/omnifetch)
@@ -14,16 +15,6 @@
 </p>
 
 ---
-
-## Бенчмарки
-
-<p align="center">
-  <img src="assets/benchmark.png" alt="Omnifetch Benchmarks" width="850">
-</p>
-
-Замеры на Arch Linux через hyperfine, статическая сборка, меньше — лучше.
-Повторить на своей машине: `python3 benchmark.py`, результаты в
-[benchmark_results.md](benchmark_results.md).
 
 ## Что это
 
@@ -43,15 +34,13 @@
 Динамическая периферия опрашивается на лету за ~0.2 мс. Как это устроено —
 [docs/DESIGN.ru.md](docs/DESIGN.ru.md).
 
-**2.0 мс** на тёплом кэше, **11-13 мс** на всех модулях без кэша (до 20 мс при холодном вводе-выводе). Замеры и как
-их повторить: `python3 benchmark.py`, результаты в
-[benchmark_results.md](benchmark_results.md).
+**2.0 мс** на тёплом кэше, **11-13 мс** на всех модулях без кэша (до 20 мс при холодном вводе-выводе).
 
 **14 пресетов вёрстки**, восемь повторяют вывод конкурентов один в один — так можно
 сравнивать скорость на одинаковом наборе данных: [docs/PRESETS.ru.md](docs/PRESETS.ru.md).
 
 **596 ASCII-логотипов** с бинарным поиском, 6 тем, 8 градиентов, Nerd Fonts,
-графика Kitty и Sixel, экспорт в JSON, тайминги по модулям, автодополнения для
+графика Kitty и Sixel, экспорт в SVG/HTML и JSON, тайминги по модулям, автодополнения для
 bash, zsh и fish.
 
 ## Установка
@@ -104,6 +93,15 @@ omnifetch --gen-config              # интерактивный TUI-конфи�
 
 Описание файла и управление TUI: [docs/CONFIG.ru.md](docs/CONFIG.ru.md).
 Переменные и функции шаблонизатора: [docs/FUNCTIONS.ru.md](docs/FUNCTIONS.ru.md).
+
+## Бенчмарки
+
+<p align="center">
+  <img src="assets/benchmark.png" alt="Omnifetch Benchmarks" width="850">
+</p>
+
+- Подробности — [benchmark_results.md](benchmark_results.md)
+- Повторить — [benchmark.py](benchmark.py)
 
 ## Документация
 

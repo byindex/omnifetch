@@ -2,6 +2,7 @@ pub mod cache;
 pub mod cmd;
 pub mod completion;
 pub mod config;
+pub mod export;
 pub mod image;
 pub mod json;
 pub mod logo;
