@@ -11,7 +11,7 @@ pub fn to_json(results: &[(&'static str, Option<ModuleOutput>)]) -> String {
         .iter()
         .filter_map(|(id, out)| {
             let out = out.as_ref()?;
-            if matches!(*id, "separator" | "break") {
+            if matches!(*id, "separator" | "break" | "colors") {
                 return None;
             }
             let data = json_data(out);
@@ -25,23 +25,43 @@ pub fn to_json(results: &[(&'static str, Option<ModuleOutput>)]) -> String {
     JsonValue::Array(items).to_string_pretty()
 }
 
+pub fn strip_ansi(s: &str) -> String {
+    if !s.contains('\x1b') {
+        return s.to_string();
+    }
+    let mut out = String::with_capacity(s.len());
+    let mut in_escape = false;
+    for c in s.chars() {
+        if c == '\x1b' {
+            in_escape = true;
+        } else if in_escape {
+            if c.is_ascii_alphabetic() || c == '\\' {
+                in_escape = false;
+            }
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}
+
 fn json_data(out: &ModuleOutput) -> JsonValue {
     let labeled: Vec<_> = out.fields.iter().filter(|f| !f.label.is_empty()).collect();
 
     if !labeled.is_empty() && labeled.len() == out.fields.len() {
         let mut entries = Vec::with_capacity(out.fields.len());
         for f in &out.fields {
-            entries.push((f.label.clone(), JsonValue::String(f.value.clone())));
+            entries.push((f.label.clone(), JsonValue::String(strip_ansi(&f.value))));
         }
         return JsonValue::Object(entries);
     }
     if out.fields.len() == 1 {
-        return JsonValue::String(out.fields[0].value.clone());
+        return JsonValue::String(strip_ansi(&out.fields[0].value));
     }
     JsonValue::Array(
         out.fields
             .iter()
-            .map(|f| JsonValue::String(f.value.clone()))
+            .map(|f| JsonValue::String(strip_ansi(&f.value)))
             .collect(),
     )
 }
@@ -206,7 +226,7 @@ pub fn to_text(
     });
 
     let lines = if cfg.border {
-        apply_border(&lines, &p, style.key, border_limit)
+        apply_border(&lines, &p, style.key, border_limit, cfg.border_title)
     } else {
         lines
     };
@@ -508,6 +528,7 @@ fn apply_border(
     p: &Painter,
     color: crate::style::Color,
     max_limit: Option<usize>,
+    title_align: crate::config::TitleAlign,
 ) -> Vec<Line> {
     if lines.is_empty() {
         return Vec::new();
@@ -592,13 +613,37 @@ fn apply_border(
         let top = match title_opt {
             Some(title) if border_w >= visible_width(title) + 4 => {
                 let tw = visible_width(title);
-                let dashes = border_w.saturating_sub(tw + 3);
-                format!(
-                    "{}{}{}",
-                    p.paint("╭─ ", color, false),
-                    p.paint(title, color, true),
-                    p.paint(&format!(" {}╮", "─".repeat(dashes)), color, false),
-                )
+                match title_align {
+                    crate::config::TitleAlign::Left => {
+                        let dashes = border_w.saturating_sub(tw + 3);
+                        format!(
+                            "{}{}{}",
+                            p.paint("╭─ ", color, false),
+                            p.paint(title, color, true),
+                            p.paint(&format!(" {}╮", "─".repeat(dashes)), color, false),
+                        )
+                    }
+                    crate::config::TitleAlign::Center => {
+                        let remaining = border_w.saturating_sub(tw + 2);
+                        let left_d = remaining / 2;
+                        let right_d = remaining.saturating_sub(left_d);
+                        format!(
+                            "{}{}{}",
+                            p.paint(&format!("╭{} ", "─".repeat(left_d)), color, false),
+                            p.paint(title, color, true),
+                            p.paint(&format!(" {}╮", "─".repeat(right_d)), color, false),
+                        )
+                    }
+                    crate::config::TitleAlign::Right => {
+                        let dashes = border_w.saturating_sub(tw + 3);
+                        format!(
+                            "{}{}{}",
+                            p.paint(&format!("╭{} ", "─".repeat(dashes)), color, false),
+                            p.paint(title, color, true),
+                            p.paint(" ─╮", color, false),
+                        )
+                    }
+                }
             }
             _ => p.paint(&format!("╭{}╮", "─".repeat(border_w)), color, false),
         };
@@ -842,8 +887,12 @@ pub fn module_category(id: &str) -> u8 {
         | "devenv" | "git" | "display" | "displayserver" | "resolution" => return 2,
         "cpu" | "cpucache" | "cputemp" | "cpuusage" | "powerprofile" | "gpu" | "gpudriver"
         | "sound" | "audioserver" | "memory" | "ram" | "swap" | "disk" | "battery"
-        | "poweradapter" | "vulkan" | "opengl" => return 3,
+        | "poweradapter" | "vulkan" | "opengl" | "physicaldisk" | "physicalmemory" | "diskio"
+        | "top" | "codec" => return 3,
         "netadapter" | "localip" | "dns" | "wifi" | "netio" | "publicip" | "weather" => return 4,
+        "keyboard" | "mouse" | "touchpad" | "camera" | "gamepad" | "media" | "player"
+        | "bluetooth" | "bluetoothradio" | "monitor" | "brightness" | "lm" | "opencl" | "btrfs"
+        | "zpool" | "containers" | "command" | "custom" => return 5,
         "colors" => return 6,
         "quote" => return 7,
         _ => {}
@@ -863,7 +912,8 @@ pub fn module_category(id: &str) -> u8 {
         // Hardware & Performance
         "cpu" | "cpucache" | "cputemp" | "cpuusage" | "powerprofile" | "gpu" | "gpudriver"
         | "sound" | "audioserver" | "memory" | "ram" | "swap" | "disk" | "battery"
-        | "poweradapter" | "vulkan" | "opengl" => 3,
+        | "poweradapter" | "vulkan" | "opengl" | "physicaldisk" | "physicalmemory" | "diskio"
+        | "top" | "codec" => 3,
         // Network & Connectivity
         "netadapter" | "localip" | "dns" | "wifi" | "netio" | "publicip" | "weather" => 4,
         // Colors
@@ -910,7 +960,13 @@ mod tests {
                 is_divider: false,
             },
         ];
-        let boxed = apply_border(&lines, &p, crate::style::Color::Default, None);
+        let boxed = apply_border(
+            &lines,
+            &p,
+            crate::style::Color::Default,
+            None,
+            crate::config::TitleAlign::Left,
+        );
         assert_eq!(boxed.len(), 4);
         assert!(boxed[0].value.starts_with('╭'));
         assert!(boxed[1].value.starts_with('│'));
@@ -941,7 +997,13 @@ mod tests {
                 is_divider: false,
             },
         ];
-        let boxed = apply_border(&lines, &p, crate::style::Color::Default, None);
+        let boxed = apply_border(
+            &lines,
+            &p,
+            crate::style::Color::Default,
+            None,
+            crate::config::TitleAlign::Left,
+        );
         assert_eq!(boxed.len(), 7);
         assert!(boxed[0].value.starts_with('╭'));
         assert!(boxed[1].value.starts_with('│'));
@@ -969,10 +1031,36 @@ mod tests {
                 is_divider: false,
             },
         ];
-        let boxed = apply_border(&lines, &p, crate::style::Color::Default, None);
+        let boxed = apply_border(
+            &lines,
+            &p,
+            crate::style::Color::Default,
+            None,
+            crate::config::TitleAlign::Left,
+        );
         assert_eq!(boxed.len(), 7);
         assert!(boxed[0].value.contains("System"));
         assert!(boxed[4].value.contains("Visual"));
+
+        // Center align
+        let center_boxed = apply_border(
+            &lines,
+            &p,
+            crate::style::Color::Default,
+            None,
+            crate::config::TitleAlign::Center,
+        );
+        assert!(center_boxed[0].value.contains(" System "));
+
+        // Right align
+        let right_boxed = apply_border(
+            &lines,
+            &p,
+            crate::style::Color::Default,
+            None,
+            crate::config::TitleAlign::Right,
+        );
+        assert!(right_boxed[0].value.contains(" System ─╮"));
     }
 
     #[test]
@@ -985,7 +1073,13 @@ mod tests {
             is_divider: false,
         }];
         // Limit total box to 35 columns
-        let boxed = apply_border(&lines, &p, crate::style::Color::Default, Some(35));
+        let boxed = apply_border(
+            &lines,
+            &p,
+            crate::style::Color::Default,
+            Some(35),
+            crate::config::TitleAlign::Left,
+        );
         assert_eq!(boxed.len(), 3);
         assert!(boxed[1].value.contains('…'));
         assert_eq!(
@@ -1068,5 +1162,26 @@ mod tests {
         assert_eq!(w0, w1);
         assert_eq!(w1, w2);
         assert_eq!(w2, w3);
+    }
+
+    #[test]
+    fn test_to_json_strips_ansi_and_skips_colors() {
+        let results = vec![
+            (
+                "memory",
+                Some(ModuleOutput::new(
+                    "Memory",
+                    "3.82 GiB [\x1b[32m████\x1b[90m░░░░\x1b[0m] 50%",
+                )),
+            ),
+            (
+                "colors",
+                Some(ModuleOutput::new("Colors", "\x1b[31m███\x1b[0m")),
+            ),
+        ];
+        let json = to_json(&results);
+        assert!(!json.contains("\x1b"));
+        assert!(json.contains("3.82 GiB [████░░░░] 50%"));
+        assert!(!json.contains("Colors"));
     }
 }

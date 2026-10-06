@@ -30,6 +30,8 @@
 
   Содержимое     quote, git, devenv
 
+  Разметка       title, separator, break, colors
+
 Актуальный список со значениями: omnifetch --list-modules
 
 ФОРМ ВЫВОДА

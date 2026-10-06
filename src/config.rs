@@ -65,6 +65,25 @@ impl Default for NetworkConfig {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum TitleAlign {
+    #[default]
+    Left,
+    Center,
+    Right,
+}
+
+impl TitleAlign {
+    pub fn parse(s: &str) -> Option<Self> {
+        match s.trim().to_ascii_lowercase().as_str() {
+            "left" => Some(Self::Left),
+            "center" | "middle" => Some(Self::Center),
+            "right" => Some(Self::Right),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Config {
     pub logo: Logo,
@@ -82,6 +101,7 @@ pub struct Config {
     pub all: bool,
     pub logo_top: bool,
     pub border: bool,
+    pub border_title: TitleAlign,
     pub nerd: bool,
     pub nerd_icons_only: bool,
     pub theme: Option<String>,
@@ -118,6 +138,7 @@ impl Default for Config {
             network: false,
             logo_top: false,
             border: false,
+            border_title: TitleAlign::Left,
             nerd: false,
             nerd_icons_only: false,
             theme: None,
@@ -203,6 +224,7 @@ OPTIONS:
         --logo-mini        Use mini ASCII logo
         --logo-top         Render logo on top instead of left
         --border           Wrap system info in unicode border box
+        --border-title <ALIGN> Alignment for category titles in border: left, center, right (default: left)
         --nerd             Prefix module keys with Nerd Font icons
         --nerd-only        Display only Nerd Font icons (hide text keys)
     -t, --theme <NAME>     Apply color theme: catppuccin, tokyo-night, nord, gruvbox, dracula, rose-pine
@@ -217,7 +239,7 @@ OPTIONS:
     -p, --preset <NAME>    Use a built-in layout preset (see --list-presets)
     -a, --all              Run all available system modules (shorthand for -p all)
     -f, --fast             Run minimal set of modules for maximum speed
-    -m, --modules <LIST>   Comma-separated module ids to run
+    -m, --modules <LIST>   Comma- or space-separated module ids to run
     -c, --config <PATH>    Load modules/logo from a TOML config
         --gen-config <?PATH> Interactively generate a config file at the specified path (use - for stdout)
         --gen-config-force Overwrite existing config file without confirmation prompt
@@ -363,6 +385,28 @@ publicip_fallback = "icanhazip.com"
 "#;
 
 pub fn parse(args: &[String]) -> Parsed {
+    // Normalize flags (strip accidental trailing whitespace/NBSP from flags starting with '-')
+    let sanitized_args: Vec<String>;
+    let args: &[String] = if args
+        .iter()
+        .any(|s| s.starts_with('-') && s.ends_with(|c: char| c.is_whitespace() || c == '\u{a0}'))
+    {
+        sanitized_args = args
+            .iter()
+            .map(|s| {
+                if s.starts_with('-') {
+                    s.trim_matches(|c: char| c.is_whitespace() || c == '\u{a0}')
+                        .to_string()
+                } else {
+                    s.clone()
+                }
+            })
+            .collect();
+        &sanitized_args
+    } else {
+        args
+    };
+
     // 1. Immediate flags short-circuit before any config file is loaded.
     let mut k = 0;
     while k < args.len() {
@@ -494,6 +538,31 @@ pub fn parse(args: &[String]) -> Parsed {
             "--logo-mini" => cfg.logo = Logo::Mini,
             "--logo-top" => cfg.logo_top = true,
             "--border" => cfg.border = true,
+            "--border-title" | "--border-align" => match need(i, a, args) {
+                Ok(v) => {
+                    if let Some(align) = TitleAlign::parse(&v) {
+                        cfg.border_title = align;
+                        cfg.border = true;
+                    } else {
+                        return Parsed::Error(format!(
+                            "unknown border title alignment '{v}'. Available alignments: left, center, right."
+                        ));
+                    }
+                    i += 1;
+                }
+                Err(e) => return Parsed::Error(e),
+            },
+            a if a.starts_with("--border-title=") || a.starts_with("--border-align=") => {
+                let v = a.split_once('=').map(|(_, val)| val).unwrap_or("");
+                if let Some(align) = TitleAlign::parse(v) {
+                    cfg.border_title = align;
+                    cfg.border = true;
+                } else {
+                    return Parsed::Error(format!(
+                        "unknown border title alignment '{v}'. Available alignments: left, center, right."
+                    ));
+                }
+            }
             "-j" | "--json" => cfg.json = true,
             "--list-themes" => return Parsed::ListThemes,
             "--list-presets" => return Parsed::ListPresets,
@@ -582,27 +651,51 @@ pub fn parse(args: &[String]) -> Parsed {
                 }
                 Err(e) => return Parsed::Error(e),
             },
-            "-m" | "--modules" | "--module" => match need(i, a, args) {
-                Ok(v) => {
-                    let list: Vec<String> = v
-                        .split(',')
-                        .map(|s| s.trim().to_ascii_lowercase())
-                        .filter(|s| !s.is_empty())
-                        .collect();
-                    if list.is_empty() {
-                        return Parsed::Error(
-                            "-m/--modules requires at least one module name".to_string(),
-                        );
-                    }
-                    if list.iter().any(|s| s == "all") {
-                        cfg.all = true;
-                    }
-                    cfg.preset = None;
-                    cfg.modules = Some(list);
-                    i += 1;
+            a if a.starts_with("-m=")
+                || a.starts_with("--modules=")
+                || a.starts_with("--module=") =>
+            {
+                let v = a.split_once('=').map(|(_, val)| val).unwrap_or("");
+                let list: Vec<String> = v
+                    .split(',')
+                    .map(|s| s.trim().to_ascii_lowercase())
+                    .filter(|s| !s.is_empty())
+                    .collect();
+                if list.is_empty() {
+                    return Parsed::Error(
+                        "-m/--modules requires at least one module name".to_string(),
+                    );
                 }
-                Err(e) => return Parsed::Error(e),
-            },
+                if list.iter().any(|s| s == "all") {
+                    cfg.all = true;
+                }
+                cfg.preset = None;
+                cfg.modules = Some(list);
+            }
+            "-m" | "--modules" | "--module" => {
+                let mut list: Vec<String> = Vec::new();
+                let mut next_i = i + 1;
+                while next_i < args.len() && !args[next_i].starts_with('-') {
+                    for part in args[next_i].split(',') {
+                        let clean = part.trim().to_ascii_lowercase();
+                        if !clean.is_empty() {
+                            list.push(clean);
+                        }
+                    }
+                    next_i += 1;
+                }
+                if list.is_empty() {
+                    return Parsed::Error(
+                        "-m/--modules requires at least one module name".to_string(),
+                    );
+                }
+                if list.iter().any(|s| s == "all") {
+                    cfg.all = true;
+                }
+                cfg.preset = None;
+                cfg.modules = Some(list);
+                i = next_i - 1;
+            }
             "-c" | "--config" => match need(i, a, args) {
                 Ok(v) => {
                     cfg.config_path = Some(PathBuf::from(v));
@@ -699,6 +792,8 @@ const KNOWN_CONFIG_KEYS: &[&str] = &[
     "fast",
     "logo_top",
     "border",
+    "border_title",
+    "border_align",
     "nerd",
     "nerd_icons_only",
     "theme",
@@ -767,6 +862,30 @@ fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     }
     if let Some(b) = v.get("border").and_then(crate::toml::TomlValue::as_bool) {
         cfg.border = b;
+    }
+    if let Some(border_table) = v.get("border").and_then(crate::toml::TomlValue::as_table) {
+        if let Some(enabled) = border_table
+            .get("enabled")
+            .and_then(crate::toml::TomlValue::as_bool)
+        {
+            cfg.border = enabled;
+        }
+        if let Some(align_str) = border_table
+            .get("title_align")
+            .or_else(|| border_table.get("align"))
+            .and_then(crate::toml::TomlValue::as_str)
+            && let Some(align) = TitleAlign::parse(align_str)
+        {
+            cfg.border_title = align;
+        }
+    }
+    if let Some(align_str) = v
+        .get("border_title")
+        .or_else(|| v.get("border_align"))
+        .and_then(crate::toml::TomlValue::as_str)
+        && let Some(align) = TitleAlign::parse(align_str)
+    {
+        cfg.border_title = align;
     }
     if let Some(n) = v.get("nerd").and_then(crate::toml::TomlValue::as_bool) {
         cfg.nerd = n;
@@ -1345,5 +1464,17 @@ weather_host = "test.wttr.in"
         assert_eq!(cfg.network_cfg.weather_ip, "5.9.243.187");
         assert_eq!(cfg.network_cfg.publicip_host, "myip.opendns.com");
         assert_eq!(cfg.network_cfg.publicip_fallback, "icanhazip.com");
+    }
+
+    #[test]
+    fn test_flag_with_trailing_nbsp() {
+        let args = vec!["--all".to_string(), "--network\u{a0}".to_string()];
+        match parse(&args) {
+            Parsed::Run(cfg) => {
+                assert!(cfg.all);
+                assert!(cfg.network);
+            }
+            _ => panic!("failed to parse flag with trailing nbsp"),
+        }
     }
 }

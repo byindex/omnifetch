@@ -28,7 +28,11 @@ Keys inside the TUI:
 
   Up Down Left Right, or k j h    move between modules
   Space                            toggle a module, removes break and separator
-  K and J                          move the module up or down in the output
+  /                                search modules by name, ID, category or description (n/N: next/prev)
+  [ and ], or - and = (or K / J)   move the module up or down in the output
+  c                                group / sort modules by category (System, Visual, Hardware...)
+  v                                live omnifetch preview of current configuration
+  r                                reset all modules and settings to defaults (with confirmation)
   b and B                          insert a blank line, or a separator
   d                                delete the selected separator or break
   f and F                          select all, or invert the selection
@@ -105,3 +109,20 @@ To use the `custom` and `command` modules:
     [format]
     custom = "My custom information"
     command = "uname -r"
+
+BORDER SETTINGS
+---------------
+
+Wrap output in unicode border boxes with optional category titles:
+
+    border = true                 # shorthand to enable borders
+
+    [border]
+    enabled = true
+    title_align = "left"          # "left", "center", or "right"
+
+On the command line:
+
+    omnifetch --border
+    omnifetch --border-title center
+    omnifetch --border-title right

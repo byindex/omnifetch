@@ -394,6 +394,9 @@ fn main() {
     }
 
     let _ = lock.write_all(text.as_bytes());
+    if !text.ends_with('\n') {
+        let _ = lock.write_all(b"\n");
+    }
     let _ = lock.flush();
 
     if !cfg.no_cache && cache_dirty {
@@ -466,11 +469,33 @@ fn select(cfg: &Config) -> Vec<BoxedModule> {
     };
 
     if cfg.network {
+        let insert_idx = mods
+            .iter()
+            .rposition(|m| omnifetch::render::module_category(m.id()) == 4)
+            .map(|pos| pos + 1)
+            .or_else(|| {
+                mods.iter().position(|m| {
+                    let cat = omnifetch::render::module_category(m.id());
+                    cat == 6 || cat == 7
+                })
+            });
+
+        let mut to_add: Vec<omnifetch::module::BoxedModule> = Vec::new();
         if !mods.iter().any(|m| m.id() == "publicip") {
-            mods.push(Box::new(omnifetch::modules::publicip::PublicIp));
+            to_add.push(Box::new(omnifetch::modules::publicip::PublicIp));
         }
         if !mods.iter().any(|m| m.id() == "weather") {
-            mods.push(Box::new(omnifetch::modules::weather::Weather));
+            to_add.push(Box::new(omnifetch::modules::weather::Weather));
+        }
+
+        if let Some(idx) = insert_idx {
+            for (offset, m) in to_add.into_iter().enumerate() {
+                mods.insert(idx + offset, m);
+            }
+        } else {
+            for m in to_add {
+                mods.push(m);
+            }
         }
     }
 

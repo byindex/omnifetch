@@ -1,8 +1,43 @@
 УСТАНОВКА И СБОРКА - omnifetch
 ==============================
 
-СБОРКА
-------
+1. CARGO (CRATES.IO)
+--------------------
+
+Самый простой и быстрый способ установить omnifetch:
+
+    cargo install omnifetch-rs
+
+Команда компилирует и устанавливает бинарник `omnifetch` в `~/.cargo/bin`. Убедитесь, что каталог `~/.cargo/bin` добавлен в переменную окружения `$PATH`.
+
+2. ARCH LINUX (AUR)
+-------------------
+
+Готовый бинарный пакет:
+
+    yay -S omnifetch-bin
+    # или: paru -S omnifetch-bin
+
+Сборка из свежего исходного кода git master:
+
+    yay -S omnifetch-git
+    # или: paru -S omnifetch-git
+
+3. ГОТОВЫЕ БИНАРНИКИ (GITHUB RELEASES)
+--------------------------------------
+
+Статически собранные архивы со скриптами автодополнений доступны на странице релизов:
+https://github.com/byindex/omnifetch/releases
+
+Скачайте архив и установите в систему:
+
+    tar -xzf omnifetch-v*-linux-x86_64.tar.gz
+    cd omnifetch-v*-linux-x86_64
+    sudo install -Dm755 omnifetch /usr/local/bin/omnifetch
+    sudo ./setup-aliases.sh   # опциональный мастер настройки псевдонимов
+
+4. СБОРКА ИЗ ИСХОДНИКОВ
+-----------------------
 
     git clone https://github.com/byindex/omnifetch
     cd omnifetch

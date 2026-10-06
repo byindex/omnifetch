@@ -1,0 +1,618 @@
+[
+  {
+    "id": "title",
+    "name": "Title",
+    "desc": "Print the title, including your username and hostname",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "separator",
+    "name": "Separator",
+    "desc": "Print a line of separator characters",
+    "enabled": true,
+    "is_special": true
+  },
+  {
+    "id": "os",
+    "name": "OS",
+    "desc": "Operating system name and version",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "host",
+    "name": "Host",
+    "desc": "Host / motherboard / system model",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "bios",
+    "name": "BIOS",
+    "desc": "BIOS / UEFI firmware information",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "bootmgr",
+    "name": "Bootmgr",
+    "desc": "Bootloader and firmware type",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "board",
+    "name": "Board",
+    "desc": "Motherboard model and manufacturer",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "chassis",
+    "name": "Chassis",
+    "desc": "Chassis form factor (Desktop, Laptop, etc.)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "kernel",
+    "name": "Kernel",
+    "desc": "Kernel release and version",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "initsystem",
+    "name": "InitSystem",
+    "desc": "Init system and service manager (e.g. systemd)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "uptime",
+    "name": "Uptime",
+    "desc": "System uptime since last boot",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "loadavg",
+    "name": "Loadavg",
+    "desc": "System load averages (1/5/15 min)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "processes",
+    "name": "Processes",
+    "desc": "Number of running processes and threads",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "packages",
+    "name": "Packages",
+    "desc": "Number of installed package managers and packages",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "shell",
+    "name": "Shell",
+    "desc": "Current shell and version",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "editor",
+    "name": "Editor",
+    "desc": "Default text editor ($EDITOR)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "display",
+    "name": "Display",
+    "desc": "Screen resolution and refresh rate",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "displayserver",
+    "name": "DisplayServer",
+    "desc": "Display server protocol (Wayland, X11, TTY)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "resolution",
+    "name": "Resolution",
+    "desc": "Screen resolution and display refresh rate",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "brightness",
+    "name": "Brightness",
+    "desc": "Screen backlight brightness percentage",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "monitor",
+    "name": "Monitor",
+    "desc": "Connected monitors and displays",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "lm",
+    "name": "LM",
+    "desc": "Login Manager / Display Manager (SDDM, GDM, LightDM, etc.)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "de",
+    "name": "DE",
+    "desc": "Desktop Environment",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "wm",
+    "name": "WM",
+    "desc": "Window Manager",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "wmtheme",
+    "name": "WMTheme",
+    "desc": "Window Manager theme / window decoration",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "theme",
+    "name": "Theme",
+    "desc": "GTK / Qt / Desktop theme",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "icons",
+    "name": "Icons",
+    "desc": "Icon theme",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "font",
+    "name": "Font",
+    "desc": "System font names and sizes",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "desc": "Cursor theme and size",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "wallpaper",
+    "name": "Wallpaper",
+    "desc": "Current desktop wallpaper image path",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "terminal",
+    "name": "Terminal",
+    "desc": "Current terminal emulator",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "terminalfont",
+    "name": "TerminalFont",
+    "desc": "Terminal font name and size",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "terminalsize",
+    "name": "TerminalSize",
+    "desc": "Terminal dimensions in columns and rows",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "terminaltheme",
+    "name": "TerminalTheme",
+    "desc": "Terminal color scheme / background theme",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "cpu",
+    "name": "CPU",
+    "desc": "Processor model, cores, and frequency",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "cpucache",
+    "name": "CPUCache",
+    "desc": "CPU cache sizes (L1, L2, L3)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "cpuusage",
+    "name": "CPUUsage",
+    "desc": "CPU utilization percentage",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "powerprofile",
+    "name": "PowerProfile",
+    "desc": "Current active system power profile",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "gpu",
+    "name": "GPU",
+    "desc": "Graphics processor and driver",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "gpudriver",
+    "name": "GpuDriver",
+    "desc": "GPU graphics driver and kernel module",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "top",
+    "name": "Top",
+    "desc": "Top process by memory usage (RSS)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "containers",
+    "name": "Containers",
+    "desc": "Count of running Docker, Podman, and LXC containers",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "command",
+    "name": "Command",
+    "desc": "Execute and display custom shell command output",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "custom",
+    "name": "Custom",
+    "desc": "Custom user-defined key and value entry",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "codec",
+    "name": "Codec",
+    "desc": "Hardware video acceleration codecs (VA-API, NVDEC)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "memory",
+    "name": "Memory",
+    "desc": "RAM usage, total, and percentage",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "physicalmemory",
+    "name": "PhysicalMemory",
+    "desc": "Physical RAM sticks and slots (DMI Type 17)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "swap",
+    "name": "Swap",
+    "desc": "Swap memory usage, total, and percentage",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "disk",
+    "name": "Disk",
+    "desc": "Disk usage by mount point",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "btrfs",
+    "name": "Btrfs",
+    "desc": "Btrfs filesystems and allocated space",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "zpool",
+    "name": "Zpool",
+    "desc": "ZFS storage pools",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "battery",
+    "name": "Battery",
+    "desc": "Battery charge percentage and charging status",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "poweradapter",
+    "name": "PowerAdapter",
+    "desc": "AC power adapter connection and wattage",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "player",
+    "name": "Player",
+    "desc": "Active MPRIS media players",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "media",
+    "name": "Media",
+    "desc": "Now playing media track and status",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "publicip",
+    "name": "PublicIp",
+    "desc": "Public IPv4 address",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "localip",
+    "name": "LocalIp",
+    "desc": "Local network IP addresses and MAC",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "dns",
+    "name": "DNS",
+    "desc": "Configured DNS nameservers",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "wifi",
+    "name": "Wifi",
+    "desc": "Wi-Fi SSID, signal strength, and protocol",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "datetime",
+    "name": "DateTime",
+    "desc": "Current date and time",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "locale",
+    "name": "Locale",
+    "desc": "System locale settings",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "vulkan",
+    "name": "Vulkan",
+    "desc": "Vulkan API version and extensions",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "opengl",
+    "name": "OpenGL",
+    "desc": "OpenGL renderer and version",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "opencl",
+    "name": "OpenCL",
+    "desc": "OpenCL platforms and drivers",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "users",
+    "name": "Users",
+    "desc": "Currently logged in user accounts",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "bluetooth",
+    "name": "Bluetooth",
+    "desc": "Bluetooth status and paired devices",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "bluetoothradio",
+    "name": "BluetoothRadio",
+    "desc": "Bluetooth controller HCI adapters",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "sound",
+    "name": "Sound",
+    "desc": "Audio devices and active volume",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "audioserver",
+    "name": "AudioServer",
+    "desc": "Active sound server (PipeWire, PulseAudio, ALSA)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "camera",
+    "name": "Camera",
+    "desc": "Connected video webcams",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "gamepad",
+    "name": "Gamepad",
+    "desc": "Connected game controllers and joysticks",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "mouse",
+    "name": "Mouse",
+    "desc": "Connected computer mice",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "touchpad",
+    "name": "Touchpad",
+    "desc": "Connected touchpads and trackpoints",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "keyboard",
+    "name": "Keyboard",
+    "desc": "Connected physical keyboards",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "weather",
+    "name": "Weather",
+    "desc": "Current weather and temperature",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "netio",
+    "name": "NetIO",
+    "desc": "Network traffic (RX / TX throughput)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "netadapter",
+    "name": "NetAdapter",
+    "desc": "Network adapters and physical interfaces",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "diskio",
+    "name": "DiskIO",
+    "desc": "Disk read and write throughput",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "physicaldisk",
+    "name": "PhysicalDisk",
+    "desc": "Physical storage drives (SSD/HDD/NVMe)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "tpm",
+    "name": "TPM",
+    "desc": "Trusted Platform Module (TPM) version",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "version",
+    "name": "Version",
+    "desc": "Omnifetch version and target architecture",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "break",
+    "name": "Break",
+    "desc": "An empty line / separator break",
+    "enabled": true,
+    "is_special": true
+  },
+  {
+    "id": "colors",
+    "name": "Colors",
+    "desc": "Terminal 16-color palette test blocks",
+    "enabled": true,
+    "is_special": false
+  },
+  {
+    "id": "quote",
+    "name": "Quote",
+    "desc": "Random programming / CS quote with probability chances",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "security",
+    "name": "Security",
+    "desc": "Kernel security modules (AppArmor, SELinux, Landlock)",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "cputemp",
+    "name": "CPUTemp",
+    "desc": "CPU package/core temperatures",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "devenv",
+    "name": "DevEnv",
+    "desc": "Development environments and toolchains",
+    "enabled": false,
+    "is_special": false
+  },
+  {
+    "id": "git",
+    "name": "Git",
+    "desc": "Current git branch, commit hash, and repo status",
+    "enabled": false,
+    "is_special": false
+  }
+]

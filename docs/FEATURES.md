@@ -29,6 +29,8 @@ and the software around them.
 
   Content       quote, git, devenv
 
+  Layout/Style  title, separator, break, colors
+
 The authoritative list with current values: omnifetch --list-modules
 
 OUTPUT SHAPE

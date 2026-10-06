@@ -19,9 +19,11 @@ OUTPUT SHAPE
       --logo-mini              Use the mini ASCII logo
       --logo-top               Render the logo above the table instead of beside it
       --border                 Wrap the output in a unicode border
+      --border-title <ALIGN>   Border category title alignment: left, center, right
       --nerd                   Prefix module keys with Nerd Font icons
       --nerd-only              Show only the icons, hide the text keys
   -j, --json                   Print raw JSON instead of a table
+      --export <TARGET>        Export output as SVG or HTML ("svg", "html", or filename)
       --no-color               Disable colours, same as NO_COLOR=1
   -T, --timing                 Print per-module timings to stderr
       --no-cache               Disable caching completely
@@ -45,7 +47,7 @@ WHAT TO RUN
   -a, --all                    Every available module, same as -p all
   -p, --preset <NAME>          Layout preset, see --list-presets
       --list-presets           List presets with descriptions and exit
-  -m, --modules <LIST>         Comma-separated module ids
+  -m, --modules <LIST>         Comma- or space-separated module ids
       --list-modules           Print every module id and exit
       --network                Enable the two modules that need internet:
                                publicip and weather

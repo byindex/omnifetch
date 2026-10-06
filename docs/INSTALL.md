@@ -1,15 +1,50 @@
 INSTALLATION AND BUILD - omnifetch
 ==================================
 
-BUILDING
---------
+1. CARGO (CRATES.IO)
+--------------------
+
+The simplest and fastest way to install omnifetch:
+
+    cargo install omnifetch-rs
+
+This compiles and installs the binary `omnifetch` into `~/.cargo/bin`. Make sure `~/.cargo/bin` is in your `$PATH`.
+
+2. ARCH LINUX (AUR)
+-------------------
+
+Precompiled binary package:
+
+    yay -S omnifetch-bin
+    # or: paru -S omnifetch-bin
+
+Built from the latest git commit:
+
+    yay -S omnifetch-git
+    # or: paru -S omnifetch-git
+
+3. PRECOMPILED BINARIES (GITHUB RELEASES)
+-----------------------------------------
+
+Statically linked release archives with shell completions are available on GitHub:
+https://github.com/byindex/omnifetch/releases
+
+Download and install:
+
+    tar -xzf omnifetch-v*-linux-x86_64.tar.gz
+    cd omnifetch-v*-linux-x86_64
+    sudo install -Dm755 omnifetch /usr/local/bin/omnifetch
+    sudo ./setup-aliases.sh   # optional shell aliases wizard
+
+4. BUILDING FROM SOURCE
+-----------------------
 
     git clone https://github.com/byindex/omnifetch
     cd omnifetch
     make
     sudo make install
 
-make install places the binary and the completions for bash, zsh and fish.
+make install places the binary and completions for bash, zsh, and fish.
 sudo make uninstall removes them again. Nothing else is written.
 
 Only rustc and cargo (with network access to fetch the single dependency libc)

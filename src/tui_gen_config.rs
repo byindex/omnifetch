@@ -88,559 +88,49 @@ pub struct ModuleItem {
     pub is_special: bool,
 }
 
+pub const MODULES_JSON: &str = include_str!("../assets/modules.json");
+
+pub fn parse_modules_json(content: &str) -> Vec<ModuleItem> {
+    let mut list = Vec::new();
+    if let Ok(crate::json::JsonValue::Array(arr)) = crate::json::parse(content) {
+        for item in arr {
+            let id = item
+                .get("id")
+                .and_then(crate::json::JsonValue::as_str)
+                .unwrap_or("");
+            let name = item
+                .get("name")
+                .and_then(crate::json::JsonValue::as_str)
+                .unwrap_or("");
+            let desc = item
+                .get("desc")
+                .and_then(crate::json::JsonValue::as_str)
+                .unwrap_or("");
+            let enabled = item
+                .get("enabled")
+                .and_then(crate::json::JsonValue::as_bool)
+                .unwrap_or(false);
+            let is_special = item
+                .get("is_special")
+                .and_then(crate::json::JsonValue::as_bool)
+                .unwrap_or(false);
+
+            if !id.is_empty() {
+                list.push(ModuleItem {
+                    id: id.to_string(),
+                    name: name.to_string(),
+                    desc: desc.to_string(),
+                    enabled,
+                    is_special,
+                });
+            }
+        }
+    }
+    list
+}
+
 fn initial_modules() -> Vec<ModuleItem> {
-    vec![
-        // Column 1
-        ModuleItem {
-            id: "title".into(),
-            name: "Title".into(),
-            desc: "Print the title, including your username and hostname".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "separator".into(),
-            name: "Separator".into(),
-            desc: "Print a line of separator characters".into(),
-            enabled: true,
-            is_special: true,
-        },
-        ModuleItem {
-            id: "os".into(),
-            name: "OS".into(),
-            desc: "Operating system name and version".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "host".into(),
-            name: "Host".into(),
-            desc: "Host / motherboard / system model".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "bios".into(),
-            name: "BIOS".into(),
-            desc: "BIOS / UEFI firmware information".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "bootmgr".into(),
-            name: "Bootmgr".into(),
-            desc: "Bootloader and firmware type".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "board".into(),
-            name: "Board".into(),
-            desc: "Motherboard model and manufacturer".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "chassis".into(),
-            name: "Chassis".into(),
-            desc: "Chassis form factor (Desktop, Laptop, etc.)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "kernel".into(),
-            name: "Kernel".into(),
-            desc: "Kernel release and version".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "initsystem".into(),
-            name: "InitSystem".into(),
-            desc: "Init system and service manager (e.g. systemd)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "uptime".into(),
-            name: "Uptime".into(),
-            desc: "System uptime since last boot".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "loadavg".into(),
-            name: "Loadavg".into(),
-            desc: "System load averages (1/5/15 min)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "processes".into(),
-            name: "Processes".into(),
-            desc: "Number of running processes and threads".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "packages".into(),
-            name: "Packages".into(),
-            desc: "Number of installed package managers and packages".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "shell".into(),
-            name: "Shell".into(),
-            desc: "Current shell and version".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "editor".into(),
-            name: "Editor".into(),
-            desc: "Default text editor ($EDITOR)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "display".into(),
-            name: "Display".into(),
-            desc: "Screen resolution and refresh rate".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "brightness".into(),
-            name: "Brightness".into(),
-            desc: "Screen backlight brightness percentage".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "monitor".into(),
-            name: "Monitor".into(),
-            desc: "Connected monitors and displays".into(),
-            enabled: false,
-            is_special: false,
-        },
-        // Column 2
-        ModuleItem {
-            id: "lm".into(),
-            name: "LM".into(),
-            desc: "Login Manager / Display Manager (SDDM, GDM, LightDM, etc.)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "de".into(),
-            name: "DE".into(),
-            desc: "Desktop Environment".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "wm".into(),
-            name: "WM".into(),
-            desc: "Window Manager".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "wmtheme".into(),
-            name: "WMTheme".into(),
-            desc: "Window Manager theme / window decoration".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "theme".into(),
-            name: "Theme".into(),
-            desc: "GTK / Qt / Desktop theme".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "icons".into(),
-            name: "Icons".into(),
-            desc: "Icon theme".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "font".into(),
-            name: "Font".into(),
-            desc: "System font names and sizes".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "cursor".into(),
-            name: "Cursor".into(),
-            desc: "Cursor theme and size".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "wallpaper".into(),
-            name: "Wallpaper".into(),
-            desc: "Current desktop wallpaper image path".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "terminal".into(),
-            name: "Terminal".into(),
-            desc: "Current terminal emulator".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "terminalfont".into(),
-            name: "TerminalFont".into(),
-            desc: "Terminal font name and size".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "terminalsize".into(),
-            name: "TerminalSize".into(),
-            desc: "Terminal dimensions in columns and rows".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "terminaltheme".into(),
-            name: "TerminalTheme".into(),
-            desc: "Terminal color scheme / background theme".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "cpu".into(),
-            name: "CPU".into(),
-            desc: "Processor model, cores, and frequency".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "cpucache".into(),
-            name: "CPUCache".into(),
-            desc: "CPU cache sizes (L1, L2, L3)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "cpuusage".into(),
-            name: "CPUUsage".into(),
-            desc: "CPU utilization percentage".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "gpu".into(),
-            name: "GPU".into(),
-            desc: "Graphics processor and driver".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "top".into(),
-            name: "Top".into(),
-            desc: "Top process by memory usage (RSS)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "codec".into(),
-            name: "Codec".into(),
-            desc: "Hardware video acceleration codecs (VA-API, NVDEC)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        // Column 3
-        ModuleItem {
-            id: "memory".into(),
-            name: "Memory".into(),
-            desc: "RAM usage, total, and percentage".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "physicalmemory".into(),
-            name: "PhysicalMemory".into(),
-            desc: "Physical RAM sticks and slots (DMI Type 17)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "swap".into(),
-            name: "Swap".into(),
-            desc: "Swap memory usage, total, and percentage".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "disk".into(),
-            name: "Disk".into(),
-            desc: "Disk usage by mount point".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "btrfs".into(),
-            name: "Btrfs".into(),
-            desc: "Btrfs filesystems and allocated space".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "zpool".into(),
-            name: "Zpool".into(),
-            desc: "ZFS storage pools".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "battery".into(),
-            name: "Battery".into(),
-            desc: "Battery charge percentage and charging status".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "poweradapter".into(),
-            name: "PowerAdapter".into(),
-            desc: "AC power adapter connection and wattage".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "player".into(),
-            name: "Player".into(),
-            desc: "Active MPRIS media players".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "media".into(),
-            name: "Media".into(),
-            desc: "Now playing media track and status".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "publicip".into(),
-            name: "PublicIp".into(),
-            desc: "Public IPv4 address".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "localip".into(),
-            name: "LocalIp".into(),
-            desc: "Local network IP addresses and MAC".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "dns".into(),
-            name: "DNS".into(),
-            desc: "Configured DNS nameservers".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "wifi".into(),
-            name: "Wifi".into(),
-            desc: "Wi-Fi SSID, signal strength, and protocol".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "datetime".into(),
-            name: "DateTime".into(),
-            desc: "Current date and time".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "locale".into(),
-            name: "Locale".into(),
-            desc: "System locale settings".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "vulkan".into(),
-            name: "Vulkan".into(),
-            desc: "Vulkan API version and extensions".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "opengl".into(),
-            name: "OpenGL".into(),
-            desc: "OpenGL renderer and version".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "opencl".into(),
-            name: "OpenCL".into(),
-            desc: "OpenCL platforms and drivers".into(),
-            enabled: false,
-            is_special: false,
-        },
-        // Column 4
-        ModuleItem {
-            id: "users".into(),
-            name: "Users".into(),
-            desc: "Currently logged in user accounts".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "bluetooth".into(),
-            name: "Bluetooth".into(),
-            desc: "Bluetooth status and paired devices".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "bluetoothradio".into(),
-            name: "BluetoothRadio".into(),
-            desc: "Bluetooth controller HCI adapters".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "sound".into(),
-            name: "Sound".into(),
-            desc: "Audio devices and active volume".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "camera".into(),
-            name: "Camera".into(),
-            desc: "Connected video webcams".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "gamepad".into(),
-            name: "Gamepad".into(),
-            desc: "Connected game controllers and joysticks".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "mouse".into(),
-            name: "Mouse".into(),
-            desc: "Connected computer mice".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "touchpad".into(),
-            name: "Touchpad".into(),
-            desc: "Connected touchpads and trackpoints".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "keyboard".into(),
-            name: "Keyboard".into(),
-            desc: "Connected physical keyboards".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "weather".into(),
-            name: "Weather".into(),
-            desc: "Current weather and temperature".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "netio".into(),
-            name: "NetIO".into(),
-            desc: "Network traffic (RX / TX throughput)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "diskio".into(),
-            name: "DiskIO".into(),
-            desc: "Disk read and write throughput".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "physicaldisk".into(),
-            name: "PhysicalDisk".into(),
-            desc: "Physical storage drives (SSD/HDD/NVMe)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "tpm".into(),
-            name: "TPM".into(),
-            desc: "Trusted Platform Module (TPM) version".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "version".into(),
-            name: "Version".into(),
-            desc: "Omnifetch version and target architecture".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "break".into(),
-            name: "Break".into(),
-            desc: "An empty line / separator break".into(),
-            enabled: true,
-            is_special: true,
-        },
-        ModuleItem {
-            id: "colors".into(),
-            name: "Colors".into(),
-            desc: "Terminal 16-color palette test blocks".into(),
-            enabled: true,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "quote".into(),
-            name: "Quote".into(),
-            desc: "Random programming / CS quote with probability chances".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "security".into(),
-            name: "Security".into(),
-            desc: "Kernel security modules (AppArmor, SELinux, Landlock)".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "cputemp".into(),
-            name: "CPUTemp".into(),
-            desc: "CPU package/core temperatures".into(),
-            enabled: false,
-            is_special: false,
-        },
-        ModuleItem {
-            id: "devenv".into(),
-            name: "DevEnv".into(),
-            desc: "Development environments and toolchains".into(),
-            enabled: false,
-            is_special: false,
-        },
-    ]
+    parse_modules_json(MODULES_JSON)
 }
 
 struct RawMode {
@@ -700,6 +190,7 @@ enum Key {
     Enter,
     Backspace,
     Delete,
+    Tab,
     Esc,
     Ctrl(char),
 }
@@ -718,6 +209,7 @@ fn parse_escape_sequence(bytes: &[u8]) -> Key {
                     b'D' => return Key::Left,
                     b'H' => return Key::Home,
                     b'F' => return Key::End,
+                    b'Z' => return Key::Tab, // Shift-Tab
                     b'1'..=b'9' => {
                         if bytes.get(3) == Some(&b'~') {
                             match bytes[2] {
@@ -762,7 +254,17 @@ fn parse_escape_sequence(bytes: &[u8]) -> Key {
     Key::None
 }
 
-fn read_key() -> Key {
+fn read_key_timeout(timeout_ms: i32) -> Key {
+    let mut pfd = libc::pollfd {
+        fd: libc::STDIN_FILENO,
+        events: libc::POLLIN,
+        revents: 0,
+    };
+    let pr = unsafe { libc::poll(&mut pfd, 1, timeout_ms) };
+    if pr <= 0 {
+        return Key::None;
+    }
+
     let mut buf = [0u8; 64];
     let n = unsafe {
         libc::read(
@@ -809,6 +311,7 @@ fn read_key() -> Key {
 
     match bytes[0] {
         b'\r' | b'\n' => Key::Enter,
+        0x09 => Key::Tab,
         0x03 => Key::Ctrl('c'),
         0x7f | 0x08 => Key::Backspace,
         b' ' => Key::Char(' '),
@@ -823,6 +326,64 @@ fn read_key() -> Key {
     }
 }
 
+fn read_key() -> Key {
+    read_key_timeout(-1)
+}
+
+pub fn module_matches(m: &ModuleItem, query: &str) -> bool {
+    if query.is_empty() {
+        return false;
+    }
+    let q = query.to_lowercase();
+    // 1. Match module name or ID (case-insensitive substring)
+    if m.name.to_lowercase().contains(&q) || m.id.to_lowercase().contains(&q) {
+        return true;
+    }
+    // 2. Useful aliases
+    if (q == "pkg" || q == "pkgs") && m.id == "packages" {
+        return true;
+    }
+    if q == "ram" && (m.id == "memory" || m.id == "physicalmemory") {
+        return true;
+    }
+    // 3. Category match: only for queries of 3+ letters that match the start of category title
+    if q.len() >= 3 {
+        let cat = crate::render::module_category(&m.id);
+        if let Some(title) = crate::render::category_title(cat)
+            && title.to_lowercase().starts_with(&q)
+        {
+            return true;
+        }
+    }
+    false
+}
+
+pub fn find_next_match(
+    modules: &[ModuleItem],
+    query: &str,
+    start_idx: usize,
+    forward: bool,
+) -> Option<usize> {
+    if query.is_empty() || modules.is_empty() {
+        return None;
+    }
+    let len = modules.len();
+    for step in 1..=len {
+        let idx = if forward {
+            (start_idx + step) % len
+        } else {
+            (start_idx + len - (step % len)) % len
+        };
+        if module_matches(&modules[idx], query) {
+            return Some(idx);
+        }
+    }
+    if module_matches(&modules[start_idx % len], query) {
+        return Some(start_idx % len);
+    }
+    None
+}
+
 pub fn run_interactive(target_path: &Path) -> Result<(), String> {
     let _raw = RawMode::enter().ok_or_else(|| "Failed to enter raw terminal mode".to_string())?;
 
@@ -835,6 +396,11 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
     let mut cursor_row: usize = 0;
     let mut scroll_row: usize = 0;
     let num_cols = 4;
+
+    let mut search_mode = false;
+    let mut search_query = String::new();
+    let mut reset_confirm = false;
+    let mut status_msg: Option<(String, std::time::Instant)> = None;
 
     loop {
         let rows_per_col = modules.len().div_ceil(num_cols).max(1);
@@ -933,42 +499,54 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                 if idx < modules.len() {
                     let item = &modules[idx];
                     let is_focused = col == cursor_col && row == cursor_row;
+                    let is_match = !search_query.is_empty() && module_matches(item, &search_query);
 
                     let mut text = String::new();
                     if item.is_special {
                         if item.enabled {
                             if is_focused {
+                                let name_style = if is_match { "\x1b[7;33m" } else { "\x1b[7;36m" };
                                 text.push_str(&format!(
-                                    "\x1b[7;36m[-]\x1b[m \x1b[36m{}\x1b[m",
+                                    "\x1b[7;36m[-]\x1b[m {name_style}{}\x1b[m",
                                     item.name
                                 ));
                             } else {
+                                let name_style = if is_match { "\x1b[1;33m" } else { "\x1b[36m" };
                                 text.push_str(&format!(
-                                    "\x1b[36m[-]\x1b[m \x1b[36m{}\x1b[m",
+                                    "\x1b[36m[-]\x1b[m {name_style}{}\x1b[m",
                                     item.name
                                 ));
                             }
                         } else if is_focused {
-                            text.push_str(&format!("\x1b[7m[ ]\x1b[m {}", item.name));
-                        } else {
-                            text.push_str(&format!("[ ] {}", item.name));
-                        }
-                    } else if item.enabled {
-                        if is_focused {
+                            let name_style = if is_match { "\x1b[7;33m" } else { "\x1b[7m" };
                             text.push_str(&format!(
-                                "\x1b[7;32m[x]\x1b[m \x1b[32m{}\x1b[m",
+                                "\x1b[7m[ ]\x1b[m {name_style}{}\x1b[m",
                                 item.name
                             ));
                         } else {
+                            let name_style = if is_match { "\x1b[1;33m" } else { "" };
+                            text.push_str(&format!("[ ] {name_style}{}\x1b[m", item.name));
+                        }
+                    } else if item.enabled {
+                        if is_focused {
+                            let name_style = if is_match { "\x1b[7;33m" } else { "\x1b[7;32m" };
                             text.push_str(&format!(
-                                "\x1b[32m[x]\x1b[m \x1b[32m{}\x1b[m",
+                                "\x1b[7;32m[x]\x1b[m {name_style}{}\x1b[m",
+                                item.name
+                            ));
+                        } else {
+                            let name_style = if is_match { "\x1b[1;33m" } else { "\x1b[32m" };
+                            text.push_str(&format!(
+                                "\x1b[32m[x]\x1b[m {name_style}{}\x1b[m",
                                 item.name
                             ));
                         }
                     } else if is_focused {
-                        text.push_str(&format!("\x1b[7m[ ]\x1b[m {}", item.name));
+                        let name_style = if is_match { "\x1b[7;33m" } else { "\x1b[7m" };
+                        text.push_str(&format!("\x1b[7m[ ]\x1b[m {name_style}{}\x1b[m", item.name));
                     } else {
-                        text.push_str(&format!("[ ] {}", item.name));
+                        let name_style = if is_match { "\x1b[1;33m" } else { "" };
+                        text.push_str(&format!("[ ] {name_style}{}\x1b[m", item.name));
                     }
 
                     // Pad visible width
@@ -985,25 +563,264 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
 
         out.push_str("\x1b[K\r\n");
 
-        // Module description line
-        let cur_idx = cursor_col * rows_per_col + cursor_row;
-        let desc = if cur_idx < modules.len() {
-            &modules[cur_idx].desc
+        if search_mode {
+            let match_count = modules
+                .iter()
+                .filter(|m| module_matches(m, &search_query))
+                .count();
+            let count_info = if !search_query.is_empty() {
+                format!(" \x1b[2m({match_count} matches)\x1b[m")
+            } else {
+                String::new()
+            };
+            out.push_str(&format!(
+                "  \x1b[1;33mSearch:\x1b[m /{search_query}\x1b[7m \x1b[m{count_info}\x1b[K\r\n"
+            ));
+            out.push_str("  \x1b[2mEnter: done  Esc: cancel  Tab/↓: next  ↑: prev  type to filter\x1b[m\x1b[K");
+        } else if reset_confirm {
+            out.push_str("  \x1b[1;31mReset all modules and settings to default?\x1b[m  \x1b[1;32m[y]\x1b[m Yes  \x1b[1;31m[n/Esc]\x1b[m Cancel\x1b[K\r\n");
+            out.push_str("  \x1b[2mPress 'y' to reset modules to initial defaults, or any other key to cancel\x1b[m\x1b[K");
         } else {
-            ""
-        };
-        out.push_str(&format!("  {}\x1b[K\r\n", desc));
+            // Bottom line 1: prominent status message banner if active, otherwise module description
+            let first_line = if let Some((ref msg, time)) = status_msg
+                && time.elapsed().as_millis() < 2500
+            {
+                format!("  {msg}")
+            } else {
+                let cur_idx = cursor_col * rows_per_col + cursor_row;
+                if cur_idx < modules.len() {
+                    let m = &modules[cur_idx];
+                    let badge = if m.is_special || m.id == "break" {
+                        "\x1b[1;90m[Layout]\x1b[m".to_string()
+                    } else if m.id == "separator" || m.id == "title" {
+                        "\x1b[1;90m[Header]\x1b[m".to_string()
+                    } else {
+                        let cat = crate::render::module_category(&m.id);
+                        match cat {
+                            1 => "\x1b[1;36m[System]\x1b[m".to_string(),
+                            2 => "\x1b[1;35m[Visual]\x1b[m".to_string(),
+                            3 => "\x1b[1;33m[Hardware]\x1b[m".to_string(),
+                            4 => "\x1b[1;34m[Network]\x1b[m".to_string(),
+                            5 => "\x1b[1;32m[Devices]\x1b[m".to_string(),
+                            6 => "\x1b[1;37m[Colors]\x1b[m".to_string(),
+                            7 => "\x1b[1;36m[Quote]\x1b[m".to_string(),
+                            _ => "\x1b[1;90m[Other]\x1b[m".to_string(),
+                        }
+                    };
+                    let search_indicator = if !search_query.is_empty() {
+                        format!("  \x1b[2m(filter: /{search_query})\x1b[m")
+                    } else {
+                        String::new()
+                    };
+                    format!("  {badge} {}{search_indicator}", m.desc)
+                } else {
+                    String::new()
+                }
+            };
+            out.push_str(&format!("{first_line}\x1b[K\r\n"));
 
-        // Hotkeys help
-        out.push_str("  \x1b[36m↑/↓\x1b[m \x1b[2mk/j\x1b[m move  \x1b[36m←/→\x1b[m col  \x1b[36mSpace\x1b[m toggle/del  \x1b[36mf/F\x1b[m all/invert  \x1b[36mK/J\x1b[m reorder  \x1b[36mb/B\x1b[m break/sep  \x1b[36md\x1b[m del\x1b[K\r\n");
-        out.push_str("  \x1b[36ml/L\x1b[m logo  \x1b[36mp/P\x1b[m position  \x1b[36mo\x1b[m minimal/full  \x1b[36ms/Enter\x1b[m save  \x1b[36mq/Esc\x1b[m quit  \x1b[36mg/G\x1b[m top/bottom\x1b[K");
+            // Hotkeys help
+            out.push_str("  \x1b[36m↑/↓\x1b[m \x1b[2mk/j\x1b[m move  \x1b[36m←/→\x1b[m col  \x1b[36mSpace\x1b[m toggle  \x1b[36m/\x1b[m search  \x1b[36m[/]\x1b[m reorder  \x1b[36mc\x1b[m categorize  \x1b[36mv\x1b[m preview\x1b[K\r\n");
+            out.push_str("  \x1b[36mr\x1b[m reset  \x1b[36mf\x1b[m all  \x1b[36mb/B\x1b[m break/sep  \x1b[36ml\x1b[m logo  \x1b[36mp\x1b[m pos  \x1b[36mo\x1b[m format  \x1b[36ms/Enter\x1b[m save  \x1b[36mq\x1b[m quit\x1b[K");
+        }
 
         print!("{out}");
         let _ = io::stdout().flush();
 
+        if reset_confirm {
+            match read_key() {
+                Key::Char('y') | Key::Char('Y') | Key::Char('н') | Key::Char('Н') => {
+                    modules = initial_modules();
+                    logo_type = LogoType::Default;
+                    logo_pos = LogoPos::Left;
+                    output_format = OutputFormat::Minimal;
+                    cursor_col = 0;
+                    cursor_row = 0;
+                    scroll_row = 0;
+                    search_query.clear();
+                    status_msg = Some((
+                        "\x1b[1;97;42m ✔ Reset to defaults! \x1b[m  \x1b[1;32mAll modules and settings restored to initial state\x1b[m".to_string(),
+                        std::time::Instant::now(),
+                    ));
+                }
+                Key::Ctrl('c') => {
+                    print!("\x1b[2J\x1b[H\x1b[?25h");
+                    let _ = io::stdout().flush();
+                    return Ok(());
+                }
+                _ => {
+                    status_msg = Some((
+                        "\x1b[1;30;43m ✖ Reset cancelled \x1b[m  \x1b[1;33mNo changes made to configuration\x1b[m".to_string(),
+                        std::time::Instant::now(),
+                    ));
+                }
+            }
+            reset_confirm = false;
+            continue;
+        }
+
+        // Read user input with timeout so that temporary status banners automatically disappear
+        let timeout_ms = if let Some((_, time)) = status_msg {
+            let elapsed_ms = time.elapsed().as_millis();
+            if elapsed_ms >= 2500 {
+                status_msg = None;
+                -1
+            } else {
+                (2500 - elapsed_ms).clamp(1, 2500) as i32
+            }
+        } else {
+            -1
+        };
+
+        let key = read_key_timeout(timeout_ms);
+        if key == Key::None {
+            if let Some((_, time)) = status_msg
+                && time.elapsed().as_millis() >= 2500
+            {
+                status_msg = None;
+            }
+            continue;
+        }
+
+        if search_mode {
+            match key {
+                Key::Esc => {
+                    search_mode = false;
+                    search_query.clear();
+                }
+                Key::Enter => {
+                    search_mode = false;
+                }
+                Key::Backspace | Key::Delete => {
+                    search_query.pop();
+                    if !search_query.is_empty() {
+                        let cur_idx = cursor_col * rows_per_col + cursor_row;
+                        let target = if module_matches(&modules[cur_idx], &search_query) {
+                            Some(cur_idx)
+                        } else {
+                            find_next_match(&modules, &search_query, cur_idx, true)
+                        };
+                        if let Some(t) = target {
+                            cursor_col = (t / rows_per_col).min(num_cols - 1);
+                            cursor_row = t % rows_per_col;
+                        }
+                    }
+                }
+                Key::Tab | Key::Down => {
+                    let cur_idx = cursor_col * rows_per_col + cursor_row;
+                    if let Some(next_idx) = find_next_match(&modules, &search_query, cur_idx, true)
+                    {
+                        cursor_col = (next_idx / rows_per_col).min(num_cols - 1);
+                        cursor_row = next_idx % rows_per_col;
+                    }
+                }
+                Key::Up => {
+                    let cur_idx = cursor_col * rows_per_col + cursor_row;
+                    if let Some(prev_idx) = find_next_match(&modules, &search_query, cur_idx, false)
+                    {
+                        cursor_col = (prev_idx / rows_per_col).min(num_cols - 1);
+                        cursor_row = prev_idx % rows_per_col;
+                    }
+                }
+                Key::Char(ch) => {
+                    search_query.push(ch);
+                    let cur_idx = cursor_col * rows_per_col + cursor_row;
+                    let target = if module_matches(&modules[cur_idx], &search_query) {
+                        Some(cur_idx)
+                    } else {
+                        find_next_match(&modules, &search_query, cur_idx, true)
+                    };
+                    if let Some(t) = target {
+                        cursor_col = (t / rows_per_col).min(num_cols - 1);
+                        cursor_row = t % rows_per_col;
+                    }
+                }
+                _ => {}
+            }
+            continue;
+        }
+
         // Handle user input
-        match read_key() {
-            Key::Up | Key::Char('k') => {
+        match key {
+            Key::Char('/') | Key::Char('?') => {
+                search_mode = true;
+                search_query.clear();
+            }
+            Key::Char('n') => {
+                if !search_query.is_empty() {
+                    let cur_idx = cursor_col * rows_per_col + cursor_row;
+                    if let Some(next_idx) = find_next_match(&modules, &search_query, cur_idx, true)
+                    {
+                        cursor_col = (next_idx / rows_per_col).min(num_cols - 1);
+                        cursor_row = next_idx % rows_per_col;
+                    }
+                }
+            }
+            Key::Char('N') => {
+                if !search_query.is_empty() {
+                    let cur_idx = cursor_col * rows_per_col + cursor_row;
+                    if let Some(prev_idx) = find_next_match(&modules, &search_query, cur_idx, false)
+                    {
+                        cursor_col = (prev_idx / rows_per_col).min(num_cols - 1);
+                        cursor_row = prev_idx % rows_per_col;
+                    }
+                }
+            }
+            Key::Char('v') | Key::Char('V') | Key::Char('м') | Key::Char('М') => {
+                let temp_path = std::env::temp_dir()
+                    .join(format!("omnifetch_prev_{}.toml", std::process::id()));
+                let selected_modules: Vec<String> = modules
+                    .iter()
+                    .filter(|m| m.enabled)
+                    .map(|m| m.id.clone())
+                    .collect();
+
+                let mut preview_cfg = String::new();
+                preview_cfg.push_str(&format!("logo = \"{}\"\n", logo_type.to_config_str()));
+                if logo_pos == LogoPos::Top {
+                    preview_cfg.push_str("logo_top = true\n");
+                }
+                preview_cfg.push_str("\nmodules = [\n");
+                for m in &selected_modules {
+                    preview_cfg.push_str(&format!("    \"{m}\",\n"));
+                }
+                preview_cfg.push_str("]\n");
+
+                if let Ok(()) = fs::write(&temp_path, &preview_cfg) {
+                    let exe = std::env::current_exe()
+                        .unwrap_or_else(|_| std::path::PathBuf::from("omnifetch"));
+                    let output = std::process::Command::new(exe)
+                        .arg("--config")
+                        .arg(&temp_path)
+                        .output();
+                    let _ = fs::remove_file(&temp_path);
+
+                    let preview_body = match output {
+                        Ok(out) => {
+                            let stdout = String::from_utf8_lossy(&out.stdout).replace('\n', "\r\n");
+                            let stderr = String::from_utf8_lossy(&out.stderr).replace('\n', "\r\n");
+                            if stdout.is_empty() && !stderr.is_empty() {
+                                stderr
+                            } else {
+                                stdout
+                            }
+                        }
+                        Err(e) => format!("Failed to run preview: {e}\r\n"),
+                    };
+
+                    print!(
+                        "\x1b[2J\x1b[H\x1b[1;36m=== Live Omnifetch Preview ===\x1b[m\r\n\r\n{}\r\n\x1b[7;36m[ Press any key to return to editor ]\x1b[m",
+                        preview_body
+                    );
+                    let _ = io::stdout().flush();
+                    let _ = read_key();
+                }
+            }
+            Key::Char('r') | Key::Char('R') | Key::Char('к') | Key::Char('К') => {
+                reset_confirm = true;
+            }
+            Key::Up | Key::Char('k') | Key::Char('л') | Key::Char('Л') => {
+                status_msg = None;
                 if cursor_row > 0 {
                     cursor_row -= 1;
                 } else if cursor_col > 0 {
@@ -1015,7 +832,8 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     }
                 }
             }
-            Key::Down | Key::Char('j') => {
+            Key::Down | Key::Char('j') | Key::Char('о') | Key::Char('О') => {
+                status_msg = None;
                 if cursor_row + 1 < rows_per_col
                     && (cursor_col * rows_per_col + cursor_row + 1) < modules.len()
                 {
@@ -1027,7 +845,8 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     cursor_row = 0;
                 }
             }
-            Key::Left | Key::Char('h') => {
+            Key::Left | Key::Char('h') | Key::Char('р') | Key::Char('Р') => {
+                status_msg = None;
                 if cursor_col > 0 {
                     cursor_col -= 1;
                     let cur_idx = cursor_col * rows_per_col + cursor_row;
@@ -1037,6 +856,7 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                 }
             }
             Key::Right => {
+                status_msg = None;
                 if cursor_col + 1 < num_cols {
                     let next_col = cursor_col + 1;
                     let next_idx = next_col * rows_per_col + cursor_row;
@@ -1079,7 +899,14 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     m.enabled = !m.enabled;
                 }
             }
-            Key::Char('K') => {
+            Key::Char('[')
+            | Key::Char('-')
+            | Key::Char(',')
+            | Key::Char('<')
+            | Key::Char('u')
+            | Key::Char('K')
+            | Key::Char('х')
+            | Key::Char('Х') => {
                 let cur_idx = cursor_col * rows_per_col + cursor_row;
                 if cur_idx > 0 && cur_idx < modules.len() {
                     modules.swap(cur_idx, cur_idx - 1);
@@ -1088,7 +915,15 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     cursor_row = target % rows_per_col;
                 }
             }
-            Key::Char('J') => {
+            Key::Char(']')
+            | Key::Char('=')
+            | Key::Char('+')
+            | Key::Char('.')
+            | Key::Char('>')
+            | Key::Char('m')
+            | Key::Char('J')
+            | Key::Char('ъ')
+            | Key::Char('Ъ') => {
                 let cur_idx = cursor_col * rows_per_col + cursor_row;
                 if cur_idx + 1 < modules.len() {
                     modules.swap(cur_idx, cur_idx + 1);
@@ -1096,6 +931,27 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     cursor_col = (target / rows_per_col).min(num_cols - 1);
                     cursor_row = target % rows_per_col;
                 }
+            }
+            Key::Char('c') | Key::Char('C') | Key::Char('с') | Key::Char('С') => {
+                let cur_idx = cursor_col * rows_per_col + cursor_row;
+                let selected_id = if cur_idx < modules.len() {
+                    Some(modules[cur_idx].id.clone())
+                } else {
+                    None
+                };
+
+                sort_modules_by_category(&mut modules);
+
+                if let Some(id) = selected_id
+                    && let Some(new_pos) = modules.iter().position(|m| m.id == id)
+                {
+                    cursor_col = (new_pos / rows_per_col).min(num_cols - 1);
+                    cursor_row = new_pos % rows_per_col;
+                }
+                status_msg = Some((
+                    "\x1b[1;97;44m ⇅ Categorized \x1b[m  \x1b[1;34mModules grouped and sorted by categories\x1b[m".to_string(),
+                    std::time::Instant::now(),
+                ));
             }
             Key::Char('b') => {
                 let cur_idx = cursor_col * rows_per_col + cursor_row;
@@ -1267,4 +1123,157 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
 
     println!("Generated config file written to {}", target_path.display());
     Ok(())
+}
+
+pub fn sort_modules_by_category(modules: &mut [ModuleItem]) {
+    modules.sort_by_key(|m| {
+        if m.id == "title" {
+            0
+        } else if m.id == "separator" {
+            1
+        } else if m.id == "break" {
+            200
+        } else {
+            match crate::render::module_category(&m.id) {
+                0 => 2,
+                1 => 10, // System
+                2 => 20, // Visual
+                3 => 30, // Hardware
+                4 => 40, // Network
+                5 => 50, // Devices
+                6 => 60, // Colors
+                7 => 70, // Quote
+                _ => 100,
+            }
+        }
+    });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sort_modules_by_category() {
+        let mut mods = vec![
+            ModuleItem {
+                id: "cpu".into(),
+                name: "CPU".into(),
+                desc: "".into(),
+                enabled: true,
+                is_special: false,
+            },
+            ModuleItem {
+                id: "os".into(),
+                name: "OS".into(),
+                desc: "".into(),
+                enabled: true,
+                is_special: false,
+            },
+            ModuleItem {
+                id: "title".into(),
+                name: "Title".into(),
+                desc: "".into(),
+                enabled: true,
+                is_special: false,
+            },
+            ModuleItem {
+                id: "weather".into(),
+                name: "Weather".into(),
+                desc: "".into(),
+                enabled: true,
+                is_special: false,
+            },
+            ModuleItem {
+                id: "colors".into(),
+                name: "Colors".into(),
+                desc: "".into(),
+                enabled: true,
+                is_special: false,
+            },
+            ModuleItem {
+                id: "wm".into(),
+                name: "WM".into(),
+                desc: "".into(),
+                enabled: true,
+                is_special: false,
+            },
+        ];
+        sort_modules_by_category(&mut mods);
+        let ids: Vec<&str> = mods.iter().map(|m| m.id.as_str()).collect();
+        assert_eq!(ids, vec!["title", "os", "wm", "cpu", "weather", "colors"]);
+    }
+
+    #[test]
+    fn test_module_matches_and_find_next_match() {
+        let mods = vec![
+            ModuleItem {
+                id: "cpu".into(),
+                name: "CPU".into(),
+                desc: "Processor model".into(),
+                enabled: true,
+                is_special: false,
+            },
+            ModuleItem {
+                id: "cputemp".into(),
+                name: "CPUTemp".into(),
+                desc: "CPU temperature".into(),
+                enabled: true,
+                is_special: false,
+            },
+            ModuleItem {
+                id: "os".into(),
+                name: "OS".into(),
+                desc: "Operating system".into(),
+                enabled: true,
+                is_special: false,
+            },
+        ];
+        assert!(module_matches(&mods[0], "cpu"));
+        assert!(module_matches(&mods[1], "cpu"));
+        assert!(!module_matches(&mods[2], "cpu"));
+        assert!(module_matches(&mods[2], "system")); // matches category System
+
+        // Test precision: "a" shouldn't match "cpu" or "cputemp"
+        assert!(!module_matches(&mods[0], "a"));
+        assert!(!module_matches(&mods[1], "a"));
+
+        // Test "pac": matches packages, but does NOT match btrfs or cputemp
+        let btrfs = ModuleItem {
+            id: "btrfs".into(),
+            name: "Btrfs".into(),
+            desc: "Allocated and used space".into(),
+            enabled: true,
+            is_special: false,
+        };
+        let packages = ModuleItem {
+            id: "packages".into(),
+            name: "Packages".into(),
+            desc: "Installed packages count".into(),
+            enabled: true,
+            is_special: false,
+        };
+        assert!(!module_matches(&btrfs, "pac"));
+        assert!(!module_matches(&mods[1], "pac"));
+        assert!(module_matches(&packages, "pac"));
+        assert!(module_matches(&packages, "pkg"));
+
+        assert_eq!(find_next_match(&mods, "cpu", 0, true), Some(1));
+        assert_eq!(find_next_match(&mods, "cpu", 1, true), Some(0));
+        assert_eq!(find_next_match(&mods, "cpu", 0, false), Some(1));
+    }
+
+    #[test]
+    fn test_initial_modules_from_embedded_json() {
+        let mods = initial_modules();
+        assert_eq!(mods.len(), 88);
+        assert_eq!(mods[0].id, "title");
+        assert!(mods.iter().any(|m| m.id == "colors"));
+        for &id in crate::modules::ALL_MODULE_IDS {
+            assert!(
+                mods.iter().any(|m| m.id == id),
+                "embedded modules.json is missing module id: {id}"
+            );
+        }
+    }
 }

@@ -20,9 +20,11 @@
       --logo-mini              Мини-логотип
       --logo-top               Логотип сверху, а не сбоку
       --border                 Обернуть вывод в Unicode-рамку
+      --border-title <ALIGN>   Выравнивание названий категорий: left, center, right
       --nerd                   Иконки Nerd Fonts перед названиями модулей
       --nerd-only              Только иконки, без текстовых ключей
   -j, --json                   Сырой JSON вместо таблицы
+      --export <TARGET>        Экспорт в SVG или HTML ("svg", "html", или имя файла)
       --no-color               Без цветов, то же что NO_COLOR=1
   -T, --timing                 Тайминги по модулям в stderr
       --no-cache               Полностью отключить кэш
@@ -46,7 +48,7 @@
   -a, --all                    Все доступные модули, то же что -p all
   -p, --preset <NAME>          Пресет вёрстки, см. --list-presets
       --list-presets           Показать пресеты с описаниями и выйти
-  -m, --modules <LIST>         Список id модулей через запятую
+  -m, --modules <LIST>         Список id модулей через запятую или пробелы
       --list-modules           Напечатать все id модулей и выйти
       --network                Включить два модуля, которым нужен интернет:
                                publicip и weather

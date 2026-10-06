@@ -13,7 +13,7 @@ _omnifetch() {{
     cur="${{COMP_WORDS[COMP_CWORD]}}"
     prev="${{COMP_WORDS[COMP_CWORD-1]}}"
 
-    opts="-h --help -V --version -f --fast -a --all -j --json -c --config -m --modules -l --logo --logo-mini --logo-top --border --nerd --nerd-only -t --theme --list-themes --list-presets --gradient -i --image --image-cols --image-rows -p --preset -T --timing --no-cache --no-color --gen-config --gen-config-force --list-modules --git --network --completion --quotes-file --quotes --export"
+    opts="-h --help -V --version -f --fast -a --all -j --json -c --config -m --modules -l --logo --logo-mini --logo-top --border --border-title --border-align --nerd --nerd-only -t --theme --list-themes --list-presets --gradient -i --image --image-cols --image-rows -p --preset -T --timing --no-cache --no-color --gen-config --gen-config-force --list-modules --git --network --completion --quotes-file --quotes --export"
     presets="minimal compact detailed modern hardware fastfetch neofetch paleofetch catnap macchina sysprint nitch pfetch all"
     logos="{logos}"
     themes="catppuccin tokyo-night nord gruvbox dracula rose-pine"
@@ -22,6 +22,10 @@ _omnifetch() {{
     case "${{prev}}" in
         --export)
             COMPREPLY=( $(compgen -W "svg html" -- "${{cur}}") )
+            return 0
+            ;;
+        --border-title|--border-align)
+            COMPREPLY=( $(compgen -W "left center right" -- "${{cur}}") )
             return 0
             ;;
         -p|--preset)
@@ -111,6 +115,8 @@ _omnifetch() {{
         '--logo-mini[Use mini ASCII logo]' \
         '--logo-top[Render logo centered on top instead of left]' \
         '--border[Wrap output in decorative unicode border box]' \
+        '--border-title[Border category title alignment]:alignment:(left center right)' \
+        '--border-align[Border category title alignment]:alignment:(left center right)' \
         '--nerd[Prefix module keys with Nerd Font icons]' \
         '--nerd-only[Display only Nerd Font icons]' \
         '(-t --theme)'{{-t,--theme}}'[Apply color theme]' \
@@ -173,6 +179,8 @@ complete -c omnifetch -s l -l logo -d 'Set distro logo' -x -a '{logos}'
 complete -c omnifetch -l logo-mini -d 'Use mini ASCII logo'
 complete -c omnifetch -l logo-top -d 'Render logo centered on top'
 complete -c omnifetch -l border -d 'Wrap output in decorative border box'
+complete -c omnifetch -l border-title -d 'Border category title alignment' -x -a 'left center right'
+complete -c omnifetch -l border-align -d 'Border category title alignment' -x -a 'left center right'
 complete -c omnifetch -l nerd -d 'Prefix module keys with Nerd Font icons'
 complete -c omnifetch -l nerd-only -d 'Display only Nerd Font icons'
 complete -c omnifetch -s t -l theme -d 'Apply color theme'

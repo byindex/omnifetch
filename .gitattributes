@@ -1,0 +1,10 @@
+# GitHub Linguist overrides
+# Keep GitHub repository language statistics at 100% Rust
+*.py linguist-detectable=false
+*.html linguist-detectable=false
+*.htm linguist-detectable=false
+*.svg linguist-detectable=false
+*.sh linguist-detectable=false
+assets/* linguist-detectable=false
+packaging/* linguist-detectable=false
+docs/* linguist-documentation=true

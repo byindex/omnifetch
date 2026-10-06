@@ -47,6 +47,7 @@ pub mod media;
 pub mod memory;
 pub mod monitor;
 pub mod mouse;
+// Internal D-Bus MPRIS helper client (not a standalone user module)
 pub mod mpris;
 pub mod netadapter;
 pub mod netio;
@@ -149,6 +150,8 @@ pub const ALL_MODULE_IDS: &[&str] = &[
     "dns",
     "wifi",
     "netio",
+    "publicip",
+    "weather",
     "resolution",
     "brightness",
     "camera",
@@ -176,8 +179,6 @@ pub const ALL_MODULE_IDS: &[&str] = &[
     "monitor",
     "containers",
     "quote",
-    "publicip",
-    "weather",
     "colors",
 ];
 
