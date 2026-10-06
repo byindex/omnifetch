@@ -653,6 +653,7 @@ fn truncate_ansi(s: &str, limit: usize) -> String {
     if limit == 0 {
         return String::new();
     }
+    let had_escape = s.contains('\x1b');
     let target = limit.saturating_sub(1);
     let mut out = String::new();
     let mut cur_w = 0;
@@ -675,7 +676,10 @@ fn truncate_ansi(s: &str, limit: usize) -> String {
             out.push(c);
         }
     }
-    out.push_str("…\x1b[0m");
+    out.push('…');
+    if had_escape {
+        out.push_str("\x1b[0m");
+    }
     out
 }
 
@@ -994,6 +998,20 @@ mod tests {
         );
         assert!(boxed[0].value.starts_with('╭'));
         assert!(boxed[2].value.starts_with('╰'));
+        assert!(!boxed[1].value.contains('\x1b'));
+    }
+
+    #[test]
+    fn test_truncate_ansi_preserves_color_flag() {
+        let plain = "Hello, world! This is a long string";
+        let truncated = truncate_ansi(plain, 10);
+        assert!(truncated.contains('…'));
+        assert!(!truncated.contains('\x1b'));
+
+        let colored = "\x1b[31mHello, world! This is a long string\x1b[0m";
+        let truncated_colored = truncate_ansi(colored, 10);
+        assert!(truncated_colored.contains('…'));
+        assert!(truncated_colored.ends_with("\x1b[0m"));
     }
 
     #[test]
