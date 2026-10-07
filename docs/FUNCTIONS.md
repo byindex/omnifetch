@@ -1,237 +1,284 @@
-OMNIFETCH TEMPLATE FUNCTIONS AND VARIABLES
-==========================================
+# Omnifetch Template Functions and Variables
 
-Formatting strings live in ~/.config/omnifetch/config.toml, in the [format]
-section. Any text outside {braces} is printed verbatim:
+Formatting strings live in `~/.config/omnifetch/config.toml`, in the `[format]` section. Any text outside `{braces}` is printed verbatim:
 
-    memory = "{f} free of 1337GB"
-    -> 4.24 GiB free of 1337GB
+```toml
+[format]
+memory = "{f} free of 1337GB"
+# -> 4.24 GiB free of 1337GB
+```
 
-A module with a single value, such as os or host, prints that value as-is and
-ignores [format].
+A module with a single value, such as `os` or `host`, prints that value as-is and ignores `[format]`.
 
+---
 
-1. MODULE VARIABLES
--------------------
+## 1. Module Variables
 
-memory
-    {used} {u}           Used RAM, human units        3.37 GiB
-    {total} {t}          Total RAM                    7.62 GiB
-    {free} {f}           Free RAM
-    {available} {a}      Available RAM, same as free
-    {pct} {p}            Percent used, no sign        44
-    {bar} {b}            Progress bar                 [#########-----]
+### `memory`
 
-swap
-    {used} {u}           Used swap
-    {total} {t}          Total swap
-    {free} {f}           Free swap
-    {pct} {p}            Percent used
-    {bar} {b}            Progress bar
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{used}`, `{u}` | Used RAM, human units | `3.37 GiB` |
+| `{total}`, `{t}` | Total RAM | `7.62 GiB` |
+| `{free}`, `{f}` | Free RAM | `4.25 GiB` |
+| `{available}`, `{a}` | Available RAM, same as free | `4.25 GiB` |
+| `{pct}`, `{p}` | Percent used, no sign | `44` |
+| `{bar}`, `{b}` | Progress bar | `[#########-----]` |
 
-disk
-    {mount} {m}          Mount point, padded to line up across disks
-    {used} {u}           Used space
-    {total} {t}          Total space
-    {free} {f}           Free space
-    {pct} {p}            Percent used
-    {bar} {b}            Progress bar
+### `swap`
 
-cpu
-    {name} {n}           Full model name
-    {cores} {c}          Core layout                   2c/4t
-    {freq} {f}           Current frequency             2592 MHz
-    {mhz}                Frequency without the unit    2592
-    {pcores}             Physical cores                2
-    {lcores}             Logical cores                 4
-    {microarch} {uarch}  Microarchitecture            Ivy Bridge
-    {simd}               SIMD extensions               SSE4.2, AVX, AVX2
-    {gflops}             Peak FP32 throughput          83.2 GFLOP/s
-    {peak_gflops}        Same as above
+| Variable | Description |
+| :--- | :--- |
+| `{used}`, `{u}` | Used swap |
+| `{total}`, `{t}` | Total swap |
+| `{free}`, `{f}` | Free swap |
+| `{pct}`, `{p}` | Percent used |
+| `{bar}`, `{b}` | Progress bar |
 
-cputemp
-    {temp} {t}           Temperature with unit         54C
-    {celsius} {c}        Celsius as a number           54
-    {fahrenheit} {f}     Fahrenheit as a number        129
-    {color}              Escape sequence: green under 60C, yellow under 80C,
-                         red above
+### `disk`
 
-cpuusage
-    {pct} {p}            Current utilisation
-    {bar} {b}            Progress bar
+| Variable | Description |
+| :--- | :--- |
+| `{mount}`, `{m}` | Mount point, padded to line up across disks |
+| `{used}`, `{u}` | Used space |
+| `{total}`, `{t}` | Total space |
+| `{free}`, `{f}` | Free space |
+| `{pct}`, `{p}` | Percent used |
+| `{bar}`, `{b}` | Progress bar |
 
-battery
-    {pct} {p}            Charge level                  98
-    {status}             Status with leading space     (charging)
-    {s}                 Short status                  Charging
-    {charging}           true while charging, empty otherwise
-    {discharging}        true while discharging, empty otherwise
-    {wh}                 Watt-hours with brackets     [45/50 Wh]
-    {energy_now}         Raw watt-hours now           45
-    {energy_full}        Raw watt-hours full          50
-    {raw_status}         Lowercase status             charging
-    {bar} {b}            Progress bar
+### `cpu`
 
-title
-    {user} {u}           Current user name
-    {host} {h}           Host name
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{name}`, `{n}` | Full model name | `AMD Ryzen 7 7840HS` |
+| `{cores}`, `{c}` | Core layout | `8c/16t` |
+| `{freq}`, `{f}` | Current frequency | `3800 MHz` |
+| `{mhz}` | Frequency without unit | `3800` |
+| `{pcores}` | Physical cores | `8` |
+| `{lcores}` | Logical cores | `16` |
+| `{microarch}`, `{uarch}` | Microarchitecture | `Zen 4` |
+| `{simd}` | SIMD extensions | `AVX-512, AVX2` |
+| `{gflops}`, `{peak_gflops}` | Peak FP32 throughput | `486.4 GFLOP/s` |
 
-uptime
-    {uptime}             Human formatted              2h 15m
-    {days} {d}           Days
-    {hours} {h}          Hours
-    {mins} {m}           Minutes
-    {secs} {s}           Seconds
-    {total_secs}         Seconds in total             8100
+### `cputemp`
 
-wifi
-    {ssid}               Network name                  MyNetwork
-    {signal} {pct} {p}   Signal quality                78
-    {dbm}                Signal strength in dBm       -52
-    {interface} {i}      Interface name                wlan0
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{temp}`, `{t}` | Temperature with unit | `54°C` |
+| `{celsius}`, `{c}` | Celsius as a number | `54` |
+| `{fahrenheit}`, `{f}` | Fahrenheit as a number | `129` |
+| `{color}` | Escape sequence: green (<60°C), yellow (<80°C), red (>=80°C) | |
 
-netio
-    {rx}                 Bytes received, human units
-    {tx}                 Bytes sent, human units
-    {total} {t}          Received plus sent
+### `cpuusage`
 
-cursor
-    {name} {n}           Cursor theme name
-    {size} {s}           Cursor size in pixels
+| Variable | Description |
+| :--- | :--- |
+| `{pct}`, `{p}` | Current utilisation percentage |
+| `{bar}`, `{b}` | Progress bar |
 
-media
-    {title}              Track title from the active MPRIS player
-    {artist}             Track artist
+### `battery`
 
-quote
-    {quote} {q}          The quote text
-    {author} {a}         Who said it
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{pct}`, `{p}` | Charge level percentage | `98` |
+| `{status}` | Status with leading space | `(charging)` |
+| `{s}` | Short status | `Charging` |
+| `{charging}` | `true` while charging, empty otherwise | |
+| `{discharging}` | `true` while discharging, empty otherwise | |
+| `{wh}` | Watt-hours with brackets | `[45/50 Wh]` |
+| `{energy_now}` | Raw watt-hours now | `45` |
+| `{energy_full}` | Raw watt-hours full | `50` |
+| `{raw_status}` | Lowercase status | `charging` |
+| `{bar}`, `{b}` | Progress bar | |
 
+### `title`
 
-2. FUNCTIONS
-------------
+| Variable | Description |
+| :--- | :--- |
+| `{user}`, `{u}` | Current username |
+| `{host}`, `{h}` | Hostname |
 
-A function can be written three ways, and all three reach the same code with the
-same value:
+### `uptime`
 
-    call     {upper(name)}        {trunc(name, 20)}     {bar(15, '=', '-')}
-    filter   {name | upper}       {name | remove('(R)') | trunc(20)}
-    colon    {used:gib}           {pct:round(1)}        {bar:15:=:-}
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{uptime}` | Human formatted | `2h 15m` |
+| `{days}`, `{d}` | Days | `0` |
+| `{hours}`, `{h}` | Hours | `2` |
+| `{mins}`, `{m}` | Minutes | `15` |
+| `{secs}`, `{s}` | Seconds | `42` |
+| `{total_secs}` | Seconds in total | `8142` |
 
-Chains work too: {name:remove('Intel(R) '):upper}
+### `wifi`
 
-Unit converters always get the raw number rather than the formatted text, so
-{used:gib} and {gib(used)} agree even though plain {used} prints "3.37 GiB".
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{ssid}` | Network name | `MyNetwork` |
+| `{signal}`, `{pct}`, `{p}` | Signal quality | `78` |
+| `{dbm}` | Signal strength in dBm | `-52` |
+| `{interface}`, `{i}` | Interface name | `wlan0` |
 
-Strings
-    upper(s) / s:upper            UPPERCASE
-    lower(s) / s:lower            lowercase
-    title(s) / s:title            Capitalise Each Word
+### `netio`
 
-    upper, uppercase              alias for upper
-    lower, lowercase              alias for lower
-    title, capitalize             alias for title
+| Variable | Description |
+| :--- | :--- |
+| `{rx}` | Bytes received, human units |
+| `{tx}` | Bytes sent, human units |
+| `{total}`, `{t}` | Received plus sent |
 
-    trunc(s, len) / s:trunc(len)  At most len characters, ellipsis included.
-                                  Never splits a multi-byte character.
-    truncate                      alias for trunc
+### `cursor`
 
-    replace(s, old, new)          Every occurrence of old becomes new
-    remove(s, pattern)            Every occurrence of pattern is deleted
-    trim(s)                       Strips whitespace at both ends
-    pad_left(s, width)            Pads on the left, text sits flush right
-    pad_right(s, width)           Pads on the right, text sits flush left
+| Variable | Description |
+| :--- | :--- |
+| `{name}`, `{n}` | Cursor theme name |
+| `{size}`, `{s}` | Cursor size in pixels |
 
-Units and numbers
-    gib(bytes) / s:gib            7.62 GiB
-    mib(bytes) / s:mib            7802.5 MiB
-    kib(bytes) / s:kib            7990000 KiB
-    raw(bytes) / s:raw            Bare integer, no unit
-    human(bytes) / s:human        Auto-scaled: B, KiB, MiB, GiB, TiB
-    round(number, decimals)       Rounded to that many decimals
+### `media`
 
-    gb, mb, kb                    aliases for gib, mib, kib
-    bytes, b                      alias for raw
+| Variable | Description |
+| :--- | :--- |
+| `{title}` | Track title from the active MPRIS player |
+| `{artist}` | Track artist |
 
-Bars
-    bar(width)                    Progress bar, default width and characters
-    bar(width, fill, empty)       Custom characters, quoted
+### `quote`
 
-    bar_color(width)              Bar coloured by percentage:
-                                    green below 60
-                                    yellow from 60 to 85
-                                    red above 85
+| Variable | Description |
+| :--- | :--- |
+| `{quote}`, `{q}` | The quote text |
+| `{author}`, `{a}` | Who said it |
 
-Fallbacks
-    default(value, fallback)      fallback when value is empty
-                                  {freq:default('N/A')}
+---
 
-System
-    env(NAME)                     Reads an environment variable
-    date(format)                  strftime, current date and time
-    time(format)                  same as date
+## 2. Functions
 
-Colours and attributes
-    {red} {green} {yellow} {blue} {magenta} {cyan} {white} {black}
-    {bright_red} {bright_green} {bright_yellow} {bright_blue}
-    {bright_magenta} {bright_cyan} {bright_white}
-    {gray} and {grey} both mean {bright_black}
-    {bold} {reset}
+A function can be written three ways, and all three reach the same code with the same value:
 
+- **call**: `{upper(name)}`, `{trunc(name, 20)}`, `{bar(15, '=', '-')}`
+- **filter**: `{name \| upper}`, `{name \| remove('(R)') \| trunc(20)}`
+- **colon**: `{used:gib}`, `{pct:round(1)}`, `{bar:15:=:-}`
 
-3. ARITHMETIC
--------------
+Chains work too: `{name:remove('Intel(R) '):upper}`
 
-Byte arithmetic, on memory, swap and disk
-    {used + 2 GiB}                Adds 2 GiB, result in human units
-    {used - 500 MiB}
-    {used * 2}
-    {used / 2}
-    {used + 2%}                   2% of total, not of used
+Unit converters always get the raw number rather than the formatted text, so `{used:gib}` and `{gib(used)}` agree even though plain `{used}` prints `"3.37 GiB"`.
 
-Percentages and plain numbers
-    {pct + 5%}                    45% becomes 50%
-    {pct - 2%}
-    {pct * 1.5}
+### Strings
 
-Changing {used} moves {bar} and {pct} with it, since both read the adjusted
-metric rather than a recorded value.
+| Function | Alias | Description |
+| :--- | :--- | :--- |
+| `upper(s)` / `s:upper` | `uppercase` | UPPERCASE |
+| `lower(s)` / `s:lower` | `lowercase` | lowercase |
+| `title(s)` / `s:title` | `capitalize` | Capitalise Each Word |
+| `trunc(s, len)` / `s:trunc(len)` | `truncate` | At most `len` characters, ellipsis included (never splits UTF-8) |
+| `replace(s, old, new)` | | Every occurrence of `old` becomes `new` |
+| `remove(s, pattern)` | | Every occurrence of `pattern` is deleted |
+| `trim(s)` | | Strips whitespace at both ends |
+| `pad_left(s, width)` | | Pads on the left, text sits flush right |
+| `pad_right(s, width)` | | Pads on the right, text sits flush left |
 
-Units accepted in arithmetic
-    b    byte    bytes
-    k    kb     kib
-    m    mb     mib
-    g    gb     gib
-    t    tb     tib
-    %    percent
+### Units and Numbers
 
-Random ranges
-    {used + 2..4 GiB}             A value between 2 and 4 GiB, different each
-                                  run. Bar and percentage follow it.
-    {pct + 2..5%}
-    {2..4 GiB}                    Standalone random value
+| Function | Alias | Output Example |
+| :--- | :--- | :--- |
+| `gib(bytes)` / `s:gib` | `gb` | `7.62 GiB` |
+| `mib(bytes)` / `s:mib` | `mb` | `7802.5 MiB` |
+| `kib(bytes)` / `s:kib` | `kb` | `7990000 KiB` |
+| `raw(bytes)` / `s:raw` | `bytes`, `b` | Bare integer, no unit |
+| `human(bytes)` / `s:human` | | Auto-scaled: `B`, `KiB`, `MiB`, `GiB`, `TiB` |
+| `round(number, decimals)` | | Rounded to specified decimals |
 
+### Progress Bars
 
-4. CONFIGURATION EXAMPLE
-------------------------
+| Function | Description |
+| :--- | :--- |
+| `bar(width)` | Progress bar, default width and characters |
+| `bar(width, fill, empty)` | Custom characters, quoted |
+| `bar_color(width)` | Bar coloured by percentage: green (<60%), yellow (60-85%), red (>85%) |
 
-    # ~/.config/omnifetch/config.toml
+### Fallbacks
 
-    [bar]
-    width = 16
-    fill = "■"
-    empty = " "
+| Function | Description | Example |
+| :--- | :--- | :--- |
+| `default(val, fallback)` | Fallback when value is empty | `{freq:default('N/A')}` |
 
-    [keys]
-    memory = "RAM"
-    swap = "SWAP"
-    disk = "Storage"
-    cpu = "Processor"
+### System & Date
 
-    [format]
-    memory = "{used + 2..4 GiB} / {total} {bar} {pct}%"
-    swap = "{used * 2} / {total} {bar} {pct}%"
-    disk = "{mount} {used} / {total} {bar} ({pct}%)"
-    cpu = "{name | remove('Intel(R) ') | remove('Core(TM) ') | upper} ({cores}) @ {freq}"
-    battery = "{bar(10)} {pct}%{status}"
-    title = "{bold}{cyan}{user}{reset}@{bold}{host}{reset}"
+| Function | Description |
+| :--- | :--- |
+| `env(NAME)` | Reads an environment variable |
+| `date(format)` | `strftime`, current date and time |
+| `time(format)` | Same as `date` |
+
+### Colors and Attributes
+
+- **Basic colors**: `{red}`, `{green}`, `{yellow}`, `{blue}`, `{magenta}`, `{cyan}`, `{white}`, `{black}`
+- **Bright colors**: `{bright_red}`, `{bright_green}`, `{bright_yellow}`, `{bright_blue}`, `{bright_magenta}`, `{bright_cyan}`, `{bright_white}`
+- **Grays**: `{gray}` and `{grey}` (both alias `{bright_black}`)
+- **Formatting**: `{bold}`, `{reset}`
+
+---
+
+## 3. Arithmetic
+
+### Byte Arithmetic (memory, swap, disk)
+
+```text
+{used + 2 GiB}     # Adds 2 GiB, result in human units
+{used - 500 MiB}
+{used * 2}
+{used / 2}
+{used + 2%}        # 2% of total, not of used
+```
+
+### Percentages and Numbers
+
+```text
+{pct + 5%}         # 45% becomes 50%
+{pct - 2%}
+{pct * 1.5}
+```
+
+Changing `{used}` moves `{bar}` and `{pct}` with it, since both read the adjusted metric rather than a recorded value.
+
+### Units Accepted in Arithmetic
+
+- Bytes: `b`, `byte`, `bytes`
+- Kilobytes: `k`, `kb`, `kib`
+- Megabytes: `m`, `mb`, `mib`
+- Gigabytes: `g`, `gb`, `gib`
+- Terabytes: `t`, `tb`, `tib`
+- Percentage: `%`, `percent`
+
+### Random Ranges
+
+```text
+{used + 2..4 GiB}  # Random value between 2 and 4 GiB, recalculated each run
+{pct + 2..5%}
+{2..4 GiB}         # Standalone random value
+```
+
+---
+
+## 4. Configuration Example
+
+```toml
+# ~/.config/omnifetch/config.toml
+
+[bar]
+width = 16
+fill = "■"
+empty = " "
+
+[keys]
+memory = "RAM"
+swap = "SWAP"
+disk = "Storage"
+cpu = "Processor"
+
+[format]
+memory = "{used + 2..4 GiB} / {total} {bar} {pct}%"
+swap = "{used * 2} / {total} {bar} {pct}%"
+disk = "{mount} {used} / {total} {bar} ({pct}%)"
+cpu = "{name | remove('Intel(R) ') | remove('Core(TM) ') | upper} ({cores}) @ {freq}"
+battery = "{bar(10)} {pct}%{status}"
+title = "{bold}{cyan}{user}{reset}@{bold}{host}{reset}"
+```

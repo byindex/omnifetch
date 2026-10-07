@@ -1,128 +1,123 @@
-КОНФИГУРАЦИЯ - omnifetch
-=======================
+# Конфигурация - omnifetch
 
-Переменные и функции шаблонизатора: FUNCTIONS.ru.md
+Переменные и функции шаблонизатора: [FUNCTIONS.ru.md](FUNCTIONS.ru.md)
 
-ГДЕ ЛЕЖИТ ФАЙЛ
----------------
+## Где лежит файл
 
-config.toml ищется в таком порядке, побеждает первый совпавший:
+`config.toml` ищется в следующем порядке (побеждает первое совпадение):
 
-  1. путь из переменной окружения $OMNIFETCH_CONFIG
-  2. $XDG_CONFIG_HOME/omnifetch/config.toml
-  3. ~/.config/omnifetch/config.toml
+1. Путь из переменной окружения `$OMNIFETCH_CONFIG`
+2. `$XDG_CONFIG_HOME/omnifetch/config.toml`
+3. `~/.config/omnifetch/config.toml`
 
-Флаг -c или --config принимает путь напрямую и перекрывает всё перечисленное.
+Флаг `-c` или `--config` принимает путь напрямую и перекрывает всё перечисленное.
 
-ИНТЕРАКТИВНЫЙ ГЕНЕРАТОР
------------------------
+## Интерактивный генератор
 
-Набор модулей, его порядок и параметры отображения собираются в TUI:
+Набор модулей, порядок их вывода и параметры оформления настраиваются в TUI:
 
-    omnifetch --gen-config                интерактивно, пишет в обычный путь
-    omnifetch --gen-config /path/to.toml  пишет по этому пути
-    omnifetch --gen-config -              печатает конфиг в stdout
-    omnifetch --gen-config-force          перезаписать без вопроса
+```bash
+omnifetch --gen-config                # интерактивно, сохраняет в ~/.config/omnifetch/config.toml
+omnifetch --gen-config /path/to.toml  # сохраняет по указанному пути
+omnifetch --gen-config -              # выводит сгенерированный конфиг в stdout
+omnifetch --gen-config-force          # перезаписывает файл без подтверждения
+```
 
-Клавиши в TUI:
+### Клавиши в TUI
 
-  стрелки, или k j h     перемещение по модулям
-  Space                  включить или выключить модуль, убрать break и separator
-  /                      поиск модулей по имени, ID, категории или описанию (n/N: след./пред.)
-  [ и ], или - и = (K/J) поднять или опустить модуль в порядке вывода
-  c                      сгруппировать модули по категориям (System, Visual, Hardware...)
-  v                      живой предпросмотр вывода omnifetch с текущими настройками
-  r                      сбросить все модули и настройки к дефолтным (с подтверждением)
-  b и B                  вставить пустую строку или разделитель
-  d                      удалить выбранный разделитель или break
-  f и F                  выделить все или инвертировать выбор
-  l                      вид логотипа: default, small, none
-  p                      позиция логотипа: auto, left, right, top
-  o                      режим вывода: minimal или full
-  s или Enter            сохранить
-  q или Esc              выйти без сохранения
+- `↑`, `↓`, `←`, `→` (или `k`, `j`, `h`, `l`) — Перемещение по модулям
+- `Space` — Включить / выключить модуль (или удалить строку `break` / `separator`)
+- `/` — Поиск модулей по имени, ID, категории или описанию (`n` / `N`: след. / пред.)
+- `[` и `]`, `-` и `=`, или `K` / `J` — Переместить выбранный модуль выше или ниже
+- `c` — Сгруппировать / отсортировать модули по категориям (System, Visual, Hardware...)
+- `v` — Живой предпросмотр вывода `omnifetch` с текущими настройками
+- `r` — Сбросить все модули и настройки к дефолтным (с подтверждением)
+- `b` и `B` — Вставить пустую строку (`break`) или горизонтальный разделитель (`separator`)
+- `d` — Удалить выбранный разделитель или пустую строку
+- `f` и `F` — Выделить все модули или инвертировать выбор
+- `l` — Вид логотипа: `default`, `small`, `none`
+- `p` — Позиция логотипа: `auto`, `left`, `right`, `top`
+- `o` — Режим вывода: `minimal` или `full`
+- `s` или `Enter` — Сохранить конфигурацию
+- `q` или `Esc` — Выйти без сохранения
 
-ПРИМЕР КОНФИГА
----------------
+## Пример конфигурации
 
-    logo = "auto"          # auto, mini, none или id дистрибутива
-    fast = false           # минимальный набор модулей
-    cache = true           # false отключает кэш в /dev/shm
-    color = true
+```toml
+logo = "auto"          # auto, mini, none или id дистрибутива
+fast = false           # минимальный набор модулей
+cache = true           # false отключает кэш в /dev/shm
+color = true
 
-    modules = ["title", "separator", "os", "host", "kernel", "uptime",
-               "packages", "shell", "cpu", "gpu", "memory", "disk"]
+modules = [
+    "title", "separator", "os", "host", "kernel", "uptime",
+    "packages", "shell", "cpu", "gpu", "memory", "disk"
+]
 
-    [bar]
-    width = 20
-    fill = "█"
-    empty = "░"
+[bar]
+width = 20
+fill = "█"
+empty = "░"
 
-    [keys]                # свои названия вместо дефолтных
-    memory = "RAM"
-    disk = "Storage"
+[keys]                 # свои названия вместо дефолтных
+memory = "RAM"
+disk = "Storage"
 
-    [style]
-    key_color = "cyan"     # имя цвета или hex, например #89b4fa
-    title_color = "bright_black"
-    bold_key = true
+[style]
+key_color = "cyan"     # имя цвета или hex, например #89b4fa
+title_color = "bright_black"
+bold_key = true
 
-    [format]              # свой шаблон вывода для каждого модуля
-    memory = "{used} / {total} {bar} {pct}%"
-    disk = "{mount} {used} / {total} ({pct}%)"
-    cpu = "{name | remove('Intel(R) ') | remove('Core(TM) ') | upper}"
+[format]               # свой шаблон вывода для каждого модуля
+memory = "{used} / {total} {bar} {pct}%"
+disk = "{mount} {used} / {total} ({pct}%)"
+cpu = "{name | remove('Intel(R) ') | remove('Core(TM) ') | upper}"
 
-    [network]             # адреса для сетевых модулей
-    weather_ip = "5.9.243.187"          # пустая строка = только DNS
-    weather_host = "wttr.in"
-    publicip_host = "myip.opendns.com"
-    publicip_fallback = "icanhazip.com"
+[network]              # адреса для сетевых модулей
+weather_ip = "5.9.243.187"          # пустая строка = только DNS
+weather_host = "wttr.in"
+publicip_host = "myip.opendns.com"
+publicip_fallback = "icanhazip.com"
+```
 
-ТЕКСТ ВНЕ СКОБОК
------------------
+## Текст вне скобок
 
-Всё вне фигурных скобок печатается как написано. Внутри скобок работают
-переменные модуля, функции-фильтры, арифметика и случайные диапазоны:
+Всё вне фигурных скобок печатается как написано. Внутри скобок работают переменные модуля, функции-фильтры, арифметика и случайные диапазоны:
 
-    [format]
-    memory = "{used + 2..4 GiB} / {total} {bar} {pct}%"   # случайный прирост
-    pct    = "{pct:round(1)}%"                            # 44.1%
+```toml
+[format]
+memory = "{used + 2..4 GiB} / {total} {bar} {pct}%"   # случайный прирост
+pct    = "{pct:round(1)}%"                            # 44.1%
+```
 
-СЕТЕВЫЕ НАСТРОЙКИ
------------------
-
-Секция network задает адреса для модулей, обращающихся к сети:
-
-    [network]
-    weather_ip = "5.9.243.187"          # пустая строка = только DNS
-    weather_host = "wttr.in"
-    publicip_host = "myip.opendns.com"
-    publicip_fallback = "icanhazip.com"
-
-МОДУЛИ CUSTOM И COMMAND
------------------------
+## Модули custom и command
 
 Для использования модулей `custom` и `command`:
 1. Добавьте `"custom"` и/или `"command"` в список `modules`.
 2. Задайте их содержимое в секции `[format]`:
 
-    [format]
-    custom = "Любой произвольный текст"
-    command = "uname -r"
+```toml
+[format]
+custom = "Любой произвольный текст"
+command = "uname -r"
+```
 
-НАСТРОЙКИ РАМКИ
----------------
+## Настройки рамки
 
 Вывод информации в блоках с рамками Unicode и заголовками категорий:
 
-    border = true                 # краткое включение рамок
+```toml
+border = true                 # краткое включение рамок
 
-    [border]
-    enabled = true
-    title_align = "left"          # "left", "center" или "right"
+[border]
+enabled = true
+title_align = "left"          # "left", "center" или "right"
+```
 
 В командной строке:
 
-    omnifetch --border
-    omnifetch --border-title center
-    omnifetch --border-title right
+```bash
+omnifetch --border
+omnifetch --border-title center
+omnifetch --border-title right
+```
