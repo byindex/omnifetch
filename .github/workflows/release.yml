@@ -32,11 +32,11 @@ jobs:
           
           # Copy binaries and scripts
           cp target/release/omnifetch "${DIST_DIR}/"
-          cp setup-aliases.sh "${DIST_DIR}/"
-          chmod +x "${DIST_DIR}/omnifetch" "${DIST_DIR}/setup-aliases.sh"
+          cp setup-aliases.sh install.sh "${DIST_DIR}/"
+          chmod +x "${DIST_DIR}/omnifetch" "${DIST_DIR}/setup-aliases.sh" "${DIST_DIR}/install.sh"
           
           # Copy documentation and license
-          cp README.md LICENSE "${DIST_DIR}/"
+          cp README.md README_ru.md LICENSE docs/INSTALL.md docs/INSTALL.ru.md "${DIST_DIR}/"
           
           # Generate shell completions
           target/release/omnifetch --completion bash > "${DIST_DIR}/completions/omnifetch.bash"

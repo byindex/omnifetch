@@ -43,6 +43,12 @@ graphics, SVG/HTML and JSON export, per-module timings, completions for bash, zs
 
 ## Installation
 
+### Quick Install (Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/byindex/omnifetch/main/install.sh | bash
+```
+
 ### Cargo (crates.io)
 
 ```bash

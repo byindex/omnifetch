@@ -90,6 +90,16 @@ memory = "{used + 2..4 GiB} / {total} {bar} {pct}%"   # random offset
 pct    = "{pct:round(1)}%"                            # 44.1%
 ```
 
+## Overriding Module Output
+
+You can override or customize the output of any module (useful for testing setups or custom output):
+
+- Directly at the top level of the config file: `os = "Bubuntu x228_1337"`
+- In the `[format]` section: `os = "Bubuntu x228_1337"` or `gpu = "2 × ASUS ROG Strix GeForce RTX 5090"`
+- In the `[values]` section: `host = "ASUS Pro WS WRX90E-SAGE SE"`
+
+Even if a module does not detect any hardware on the current machine, the specified value will be rendered.
+
 ## Custom and Command Modules
 
 To use the `custom` and `command` modules:

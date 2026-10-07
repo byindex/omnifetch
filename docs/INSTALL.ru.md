@@ -30,13 +30,30 @@ yay -S omnifetch-git
 
 Статически собранные архивы со скриптами автодополнений доступны на странице [GitHub Releases](https://github.com/byindex/omnifetch/releases).
 
-Скачайте архив и установите в систему:
+### Автоматическая установка
 
 ```bash
 tar -xzf omnifetch-v*-linux-x86_64.tar.gz
 cd omnifetch-v*-linux-x86_64
+sudo ./install.sh
+```
+
+Или установка в одну строку через curl:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/byindex/omnifetch/main/install.sh | bash
+```
+
+### Ручная установка
+
+```bash
 sudo install -Dm755 omnifetch /usr/local/bin/omnifetch
 sudo ./setup-aliases.sh   # опциональный мастер настройки псевдонимов
+
+# Опционально: установка автодополнений для shell
+sudo install -Dm644 completions/omnifetch.bash /usr/share/bash-completion/completions/omnifetch
+sudo install -Dm644 completions/_omnifetch /usr/share/zsh/site-functions/_omnifetch
+sudo install -Dm644 completions/omnifetch.fish /usr/share/fish/vendor_completions.d/omnifetch.fish
 ```
 
 ## 4. Сборка из исходников

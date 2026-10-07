@@ -79,6 +79,157 @@ impl OutputFormat {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum ThemeOpt {
+    Default,
+    Catppuccin,
+    TokyoNight,
+    Nord,
+    Gruvbox,
+    Dracula,
+    RosePine,
+}
+
+impl ThemeOpt {
+    pub fn next(self) -> Self {
+        match self {
+            ThemeOpt::Default => ThemeOpt::Catppuccin,
+            ThemeOpt::Catppuccin => ThemeOpt::TokyoNight,
+            ThemeOpt::TokyoNight => ThemeOpt::Nord,
+            ThemeOpt::Nord => ThemeOpt::Gruvbox,
+            ThemeOpt::Gruvbox => ThemeOpt::Dracula,
+            ThemeOpt::Dracula => ThemeOpt::RosePine,
+            ThemeOpt::RosePine => ThemeOpt::Default,
+        }
+    }
+
+    pub fn to_config_str(self) -> Option<&'static str> {
+        match self {
+            ThemeOpt::Default => None,
+            ThemeOpt::Catppuccin => Some("catppuccin"),
+            ThemeOpt::TokyoNight => Some("tokyo-night"),
+            ThemeOpt::Nord => Some("nord"),
+            ThemeOpt::Gruvbox => Some("gruvbox"),
+            ThemeOpt::Dracula => Some("dracula"),
+            ThemeOpt::RosePine => Some("rose-pine"),
+        }
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            ThemeOpt::Default => "default",
+            ThemeOpt::Catppuccin => "catppuccin",
+            ThemeOpt::TokyoNight => "tokyo-night",
+            ThemeOpt::Nord => "nord",
+            ThemeOpt::Gruvbox => "gruvbox",
+            ThemeOpt::Dracula => "dracula",
+            ThemeOpt::RosePine => "rose-pine",
+        }
+    }
+
+    pub fn desc(self) -> &'static str {
+        match self {
+            ThemeOpt::Default => "Built-in default styling",
+            ThemeOpt::Catppuccin => "Soothing pastel mocha palette",
+            ThemeOpt::TokyoNight => "Clean, dark blue Tokyo Night theme",
+            ThemeOpt::Nord => "Arctic, north-bluish clean palette",
+            ThemeOpt::Gruvbox => "Retro groove warm earthy colors",
+            ThemeOpt::Dracula => "High-contrast dark theme with purple/pink",
+            ThemeOpt::RosePine => "All natural pine, warm gold, and love",
+        }
+    }
+
+    pub fn swatch(self) -> &'static str {
+        match self {
+            ThemeOpt::Default => "\x1b[36m●\x1b[m",
+            ThemeOpt::Catppuccin => "\x1b[38;2;137;180;250m●\x1b[m",
+            ThemeOpt::TokyoNight => "\x1b[38;2;122;162;247m●\x1b[m",
+            ThemeOpt::Nord => "\x1b[38;2;136;192;208m●\x1b[m",
+            ThemeOpt::Gruvbox => "\x1b[38;2;250;189;47m●\x1b[m",
+            ThemeOpt::Dracula => "\x1b[38;2;189;147;249m●\x1b[m",
+            ThemeOpt::RosePine => "\x1b[38;2;234;154;151m●\x1b[m",
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, Debug)]
+pub enum KeyColorOpt {
+    Default,
+    Cyan,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Red,
+    White,
+    Hex(String),
+}
+
+impl KeyColorOpt {
+    pub fn next(&self) -> Self {
+        match self {
+            KeyColorOpt::Default => KeyColorOpt::Cyan,
+            KeyColorOpt::Cyan => KeyColorOpt::Green,
+            KeyColorOpt::Green => KeyColorOpt::Yellow,
+            KeyColorOpt::Yellow => KeyColorOpt::Blue,
+            KeyColorOpt::Blue => KeyColorOpt::Magenta,
+            KeyColorOpt::Magenta => KeyColorOpt::Red,
+            KeyColorOpt::Red => KeyColorOpt::White,
+            KeyColorOpt::White => KeyColorOpt::Default,
+            KeyColorOpt::Hex(_) => KeyColorOpt::Default,
+        }
+    }
+
+    pub fn to_config_str(&self) -> Option<String> {
+        match self {
+            KeyColorOpt::Default => None,
+            KeyColorOpt::Cyan => Some("cyan".into()),
+            KeyColorOpt::Green => Some("green".into()),
+            KeyColorOpt::Yellow => Some("yellow".into()),
+            KeyColorOpt::Blue => Some("blue".into()),
+            KeyColorOpt::Magenta => Some("magenta".into()),
+            KeyColorOpt::Red => Some("red".into()),
+            KeyColorOpt::White => Some("white".into()),
+            KeyColorOpt::Hex(h) => Some(h.clone()),
+        }
+    }
+
+    pub fn name(&self) -> String {
+        match self {
+            KeyColorOpt::Default => "default".into(),
+            KeyColorOpt::Cyan => "cyan".into(),
+            KeyColorOpt::Green => "green".into(),
+            KeyColorOpt::Yellow => "yellow".into(),
+            KeyColorOpt::Blue => "blue".into(),
+            KeyColorOpt::Magenta => "magenta".into(),
+            KeyColorOpt::Red => "red".into(),
+            KeyColorOpt::White => "white".into(),
+            KeyColorOpt::Hex(h) => h.clone(),
+        }
+    }
+
+    pub fn swatch(&self) -> String {
+        match self {
+            KeyColorOpt::Default => "\x1b[36m●\x1b[m".into(),
+            KeyColorOpt::Cyan => "\x1b[36m●\x1b[m".into(),
+            KeyColorOpt::Green => "\x1b[32m●\x1b[m".into(),
+            KeyColorOpt::Yellow => "\x1b[33m●\x1b[m".into(),
+            KeyColorOpt::Blue => "\x1b[34m●\x1b[m".into(),
+            KeyColorOpt::Magenta => "\x1b[35m●\x1b[m".into(),
+            KeyColorOpt::Red => "\x1b[31m●\x1b[m".into(),
+            KeyColorOpt::White => "\x1b[37m●\x1b[m".into(),
+            KeyColorOpt::Hex(h) => {
+                let clean = h.trim().strip_prefix('#').unwrap_or(h.trim());
+                if let Some(crate::style::Color::Rgb(r, g, b)) = crate::style::Color::parse(clean) {
+                    format!("\x1b[38;2;{r};{g};{b}m●\x1b[m")
+                } else {
+                    "●".into()
+                }
+            }
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct ModuleItem {
     pub id: String,
@@ -390,6 +541,8 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
     let mut logo_type = LogoType::Default;
     let mut logo_pos = LogoPos::Left;
     let mut output_format = OutputFormat::Minimal;
+    let mut theme_opt = ThemeOpt::Default;
+    let mut key_color_opt = KeyColorOpt::Default;
     let mut modules = initial_modules();
 
     let mut cursor_col: usize = 0;
@@ -399,6 +552,8 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
 
     let mut search_mode = false;
     let mut search_query = String::new();
+    let mut hex_input_mode = false;
+    let mut hex_input_buffer = String::new();
     let mut reset_confirm = false;
     let mut status_msg: Option<(String, std::time::Instant)> = None;
 
@@ -408,7 +563,7 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
         let term_cols = size.map_or(80, |s| s.cols as usize).max(60);
         let term_rows = size.map_or(24, |s| s.rows as usize).max(16);
 
-        let visible_rows = (term_rows.saturating_sub(11)).clamp(4, rows_per_col);
+        let visible_rows = (term_rows.saturating_sub(13)).clamp(4, rows_per_col);
         if cursor_row < scroll_row {
             scroll_row = cursor_row;
         } else if cursor_row >= scroll_row + visible_rows {
@@ -426,7 +581,7 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
         out.push_str("  \x1b[1momnifetch\x1b[m configuration\x1b[2m    interactive config generator\x1b[m\x1b[K\r\n\x1b[K\r\n");
 
         // Logo type
-        out.push_str("  \x1b[1;4mL\x1b[24mogo type:\x1b[m  ");
+        out.push_str("  \x1b[1;4mL\x1b[24mogo type:\x1b[m      ");
         let lt_opts = [
             (LogoType::Default, "default"),
             (LogoType::Small, "small"),
@@ -453,8 +608,29 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
         }
         out.push_str(&format!("\x1b[2m- {}\x1b[m\x1b[K\r\n", logo_pos.desc()));
 
+        // Theme
+        out.push_str(&format!(
+            "  \x1b[1;4mT\x1b[24mheme:\x1b[m          [ < \x1b[1m{}\x1b[m > ]  {} \x1b[2m- {}\x1b[m\x1b[K\r\n",
+            theme_opt.name(),
+            theme_opt.swatch(),
+            theme_opt.desc()
+        ));
+
+        // Key color
+        let color_desc = match &key_color_opt {
+            KeyColorOpt::Default => "theme or default cyan (x: cycle, H: custom hex)",
+            KeyColorOpt::Hex(_) => "custom hex color (x: cycle, H: edit hex)",
+            _ => "explicit key color (x: cycle, H: custom hex)",
+        };
+        out.push_str(&format!(
+            "  \x1b[1mColor (\x1b[4mx\x1b[24m/\x1b[4mH\x1b[24m):\x1b[m    [ < \x1b[1m{}\x1b[m > ]  {} \x1b[2m- {}\x1b[m\x1b[K\r\n",
+            key_color_opt.name(),
+            key_color_opt.swatch(),
+            color_desc
+        ));
+
         // Output
-        out.push_str("  \x1b[1;4mO\x1b[24mutput:\x1b[m  ");
+        out.push_str("  \x1b[1;4mO\x1b[24mutput:\x1b[m         ");
         let out_opts = [
             (OutputFormat::Minimal, "minimal"),
             (OutputFormat::Full, "full"),
@@ -563,7 +739,25 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
 
         out.push_str("\x1b[K\r\n");
 
-        if search_mode {
+        if hex_input_mode {
+            let preview_hex = {
+                let clean = hex_input_buffer
+                    .trim()
+                    .strip_prefix('#')
+                    .unwrap_or(hex_input_buffer.trim());
+                if let Some(crate::style::Color::Rgb(r, g, b)) = crate::style::Color::parse(clean) {
+                    format!("  \x1b[38;2;{r};{g};{b}m●\x1b[m \x1b[32m✔ valid\x1b[m")
+                } else if clean.len() == 6 {
+                    "  \x1b[31m✖ invalid hex\x1b[m".to_string()
+                } else {
+                    format!("  \x1b[2m({}/6 hex digits)\x1b[m", clean.len())
+                }
+            };
+            out.push_str(&format!(
+                "  \x1b[1;35mCustom Hex Color:\x1b[m #{hex_input_buffer}\x1b[7m \x1b[m{preview_hex}\x1b[K\r\n"
+            ));
+            out.push_str("  \x1b[2mEnter: apply  Esc: cancel  Backspace: delete  (e.g. ff007f or 7928ca)\x1b[m\x1b[K");
+        } else if search_mode {
             let match_count = modules
                 .iter()
                 .filter(|m| module_matches(m, &search_query))
@@ -620,8 +814,8 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
             out.push_str(&format!("{first_line}\x1b[K\r\n"));
 
             // Hotkeys help
-            out.push_str("  \x1b[36m↑/↓\x1b[m \x1b[2mk/j\x1b[m move  \x1b[36m←/→\x1b[m col  \x1b[36mSpace\x1b[m toggle  \x1b[36m/\x1b[m search  \x1b[36m[/]\x1b[m reorder  \x1b[36mc\x1b[m categorize  \x1b[36mv\x1b[m preview\x1b[K\r\n");
-            out.push_str("  \x1b[36mr\x1b[m reset  \x1b[36mf\x1b[m all  \x1b[36mb/B\x1b[m break/sep  \x1b[36ml\x1b[m logo  \x1b[36mp\x1b[m pos  \x1b[36mo\x1b[m format  \x1b[36ms/Enter\x1b[m save  \x1b[36mq\x1b[m quit\x1b[K");
+            out.push_str("  \x1b[36m↑/↓\x1b[m move  \x1b[36m←/→\x1b[m col  \x1b[36mSpace\x1b[m toggle  \x1b[36m/\x1b[m search  \x1b[36m[/]\x1b[m reorder  \x1b[36mt\x1b[m theme  \x1b[36mx/H\x1b[m color/hex\x1b[K\r\n");
+            out.push_str("  \x1b[36mr\x1b[m reset  \x1b[36mf\x1b[m all  \x1b[36mb/B\x1b[m break/sep  \x1b[36ml\x1b[m logo  \x1b[36mp\x1b[m pos  \x1b[36mo\x1b[m format  \x1b[36mv\x1b[m preview  \x1b[36ms/Enter\x1b[m save  \x1b[36mq\x1b[m quit\x1b[K");
         }
 
         print!("{out}");
@@ -634,6 +828,8 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     logo_type = LogoType::Default;
                     logo_pos = LogoPos::Left;
                     output_format = OutputFormat::Minimal;
+                    theme_opt = ThemeOpt::Default;
+                    key_color_opt = KeyColorOpt::Default;
                     cursor_col = 0;
                     cursor_row = 0;
                     scroll_row = 0;
@@ -678,6 +874,54 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                 && time.elapsed().as_millis() >= 2500
             {
                 status_msg = None;
+            }
+            continue;
+        }
+
+        if hex_input_mode {
+            match key {
+                Key::Esc => {
+                    hex_input_mode = false;
+                    hex_input_buffer.clear();
+                }
+                Key::Enter => {
+                    let clean = hex_input_buffer
+                        .trim()
+                        .strip_prefix('#')
+                        .unwrap_or(hex_input_buffer.trim());
+                    if let Some(crate::style::Color::Rgb(r, g, b)) =
+                        crate::style::Color::parse(clean)
+                    {
+                        key_color_opt = KeyColorOpt::Hex(format!("#{clean}"));
+                        status_msg = Some((
+                            format!(
+                                "\x1b[1;97;42m ✔ Color set \x1b[m  \x1b[1;38;2;{r};{g};{b}m●\x1b[m Custom hex color #{clean} applied"
+                            ),
+                            std::time::Instant::now(),
+                        ));
+                        hex_input_mode = false;
+                        hex_input_buffer.clear();
+                    } else if clean.is_empty() {
+                        hex_input_mode = false;
+                    } else {
+                        status_msg = Some((
+                            "\x1b[1;30;41m ✖ Invalid hex \x1b[m  \x1b[1;31mPlease enter 6 hex digits (e.g. ff007f)\x1b[m".to_string(),
+                            std::time::Instant::now(),
+                        ));
+                    }
+                }
+                Key::Backspace | Key::Delete => {
+                    hex_input_buffer.pop();
+                }
+                Key::Char(ch)
+                    if (ch.is_ascii_hexdigit() || ch == '#') && hex_input_buffer.len() < 7 =>
+                {
+                    let ch_clean = ch.to_ascii_lowercase();
+                    if ch_clean != '#' || hex_input_buffer.is_empty() {
+                        hex_input_buffer.push(ch_clean);
+                    }
+                }
+                _ => {}
             }
             continue;
         }
@@ -776,6 +1020,9 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     .collect();
 
                 let mut preview_cfg = String::new();
+                if let Some(th) = theme_opt.to_config_str() {
+                    preview_cfg.push_str(&format!("theme = \"{th}\"\n"));
+                }
                 preview_cfg.push_str(&format!("logo = \"{}\"\n", logo_type.to_config_str()));
                 if logo_pos == LogoPos::Top {
                     preview_cfg.push_str("logo_top = true\n");
@@ -785,6 +1032,10 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     preview_cfg.push_str(&format!("    \"{m}\",\n"));
                 }
                 preview_cfg.push_str("]\n");
+                if let Some(kc) = key_color_opt.to_config_str() {
+                    preview_cfg.push_str("\n[style]\n");
+                    preview_cfg.push_str(&format!("key_color = \"{kc}\"\n"));
+                }
 
                 if let Ok(()) = fs::write(&temp_path, &preview_cfg) {
                     let exe = std::env::current_exe()
@@ -1009,13 +1260,39 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                     }
                 }
             }
-            Key::Char('l') | Key::Char('L') => {
+            Key::Char('t') | Key::Char('T') | Key::Char('е') | Key::Char('Е') => {
+                theme_opt = theme_opt.next();
+                status_msg = Some((
+                    format!(
+                        "\x1b[1;97;45m 🎨 Theme \x1b[m  Theme set to \x1b[1m{}\x1b[m {}",
+                        theme_opt.name(),
+                        theme_opt.swatch()
+                    ),
+                    std::time::Instant::now(),
+                ));
+            }
+            Key::Char('x') | Key::Char('ч') => {
+                key_color_opt = key_color_opt.next();
+                status_msg = Some((
+                    format!(
+                        "\x1b[1;97;46m 🌈 Key Color \x1b[m  Color set to \x1b[1m{}\x1b[m {}",
+                        key_color_opt.name(),
+                        key_color_opt.swatch()
+                    ),
+                    std::time::Instant::now(),
+                ));
+            }
+            Key::Char('H') | Key::Char('X') | Key::Char('Ч') | Key::Char('#') => {
+                hex_input_mode = true;
+                hex_input_buffer.clear();
+            }
+            Key::Char('l') | Key::Char('L') | Key::Char('д') | Key::Char('Д') => {
                 logo_type = logo_type.next();
             }
-            Key::Char('p') | Key::Char('P') => {
+            Key::Char('p') | Key::Char('P') | Key::Char('з') | Key::Char('З') => {
                 logo_pos = logo_pos.next();
             }
-            Key::Char('o') | Key::Char('O') => {
+            Key::Char('o') | Key::Char('O') | Key::Char('щ') | Key::Char('Щ') => {
                 output_format = output_format.next();
             }
             Key::Char('g') | Key::Home => {
@@ -1039,11 +1316,16 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                 cursor_row = (cursor_row + visible_rows).min(max_row);
             }
             Key::None => {}
-            Key::Char('s') | Key::Enter => {
+            Key::Char('s') | Key::Char('S') | Key::Char('ы') | Key::Char('Ы') | Key::Enter => {
                 // Save and exit
                 break;
             }
-            Key::Char('q') | Key::Esc | Key::Ctrl('c') => {
+            Key::Char('q')
+            | Key::Char('Q')
+            | Key::Char('й')
+            | Key::Char('Й')
+            | Key::Esc
+            | Key::Ctrl('c') => {
                 println!("Configuration cancelled.");
                 return Ok(());
             }
@@ -1063,6 +1345,9 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
             let mut s = String::new();
             s.push_str("# omnifetch configuration file\n");
             s.push_str("# Generated by omnifetch interactive config generator\n\n");
+            if let Some(th) = theme_opt.to_config_str() {
+                s.push_str(&format!("theme = \"{th}\"\n"));
+            }
             s.push_str(&format!("logo = \"{}\"\n", logo_type.to_config_str()));
             if logo_pos == LogoPos::Top {
                 s.push_str("logo_top = true\n");
@@ -1072,6 +1357,10 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                 s.push_str(&format!("    \"{m}\",\n"));
             }
             s.push_str("]\n");
+            if let Some(kc) = key_color_opt.to_config_str() {
+                s.push_str("\n[style]\n");
+                s.push_str(&format!("key_color = \"{kc}\"\n"));
+            }
             s
         }
         OutputFormat::Full => {
@@ -1089,6 +1378,20 @@ pub fn run_interactive(target_path: &Path) -> Result<(), String> {
                         "logo = \"{}\"\nlogo_top = true\n",
                         logo_type.to_config_str()
                     ),
+                    1,
+                );
+            }
+            if let Some(th) = theme_opt.to_config_str() {
+                template = template.replacen(
+                    "# Disable color output\n# color = false\n",
+                    &format!("# Disable color output\n# color = false\n\n# Color theme\ntheme = \"{th}\"\n"),
+                    1,
+                );
+            }
+            if let Some(kc) = key_color_opt.to_config_str() {
+                template = template.replacen(
+                    "# key_color = \"cyan\"",
+                    &format!("key_color = \"{kc}\""),
                     1,
                 );
             }
@@ -1275,5 +1578,48 @@ mod tests {
                 "embedded modules.json is missing module id: {id}"
             );
         }
+    }
+
+    #[test]
+    fn test_theme_opt_cycle_and_conversion() {
+        let mut t = ThemeOpt::Default;
+        assert_eq!(t.to_config_str(), None);
+        assert_eq!(t.name(), "default");
+
+        t = t.next();
+        assert_eq!(t, ThemeOpt::Catppuccin);
+        assert_eq!(t.to_config_str(), Some("catppuccin".into()));
+
+        t = t.next();
+        assert_eq!(t, ThemeOpt::TokyoNight);
+        t = t.next();
+        assert_eq!(t, ThemeOpt::Nord);
+        t = t.next();
+        assert_eq!(t, ThemeOpt::Gruvbox);
+        t = t.next();
+        assert_eq!(t, ThemeOpt::Dracula);
+        t = t.next();
+        assert_eq!(t, ThemeOpt::RosePine);
+        t = t.next();
+        assert_eq!(t, ThemeOpt::Default);
+    }
+
+    #[test]
+    fn test_key_color_opt_cycle_and_hex() {
+        let mut c = KeyColorOpt::Default;
+        assert_eq!(c.to_config_str(), None);
+        assert_eq!(c.name(), "default");
+
+        c = c.next();
+        assert_eq!(c, KeyColorOpt::Cyan);
+        assert_eq!(c.to_config_str(), Some("cyan".into()));
+
+        c = KeyColorOpt::Hex("#ff007f".into());
+        assert_eq!(c.to_config_str(), Some("#ff007f".into()));
+        assert_eq!(c.name(), "#ff007f");
+        assert!(c.swatch().contains("\x1b[38;2;255;0;127m"));
+
+        c = c.next();
+        assert_eq!(c, KeyColorOpt::Default);
     }
 }

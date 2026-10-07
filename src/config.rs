@@ -110,6 +110,7 @@ pub struct Config {
     pub network: bool,
     pub quotes_file: Option<PathBuf>,
     pub style: Style,
+    pub style_overrides: crate::style::StyleOverrides,
     pub bar: BarConfig,
     pub keys: HashMap<String, String>,
     pub format: HashMap<String, String>,
@@ -147,6 +148,7 @@ impl Default for Config {
             quotes_file: None,
             export: None,
             style: Style::default(),
+            style_overrides: crate::style::StyleOverrides::default(),
             bar: BarConfig::default(),
             keys: HashMap::new(),
             format: HashMap::new(),
@@ -230,7 +232,8 @@ OPTIONS:
     -t, --theme <NAME>     Apply color theme: catppuccin, tokyo-night, nord, gruvbox, dracula, rose-pine
         --list-themes      List available built-in themes and exit
         --list-presets     List available layout presets and exit
-        --gradient <NAME>  Apply color gradient: rainbow, sunset, cyberpunk, synthwave, fire, ice, matrix, dracula
+        --gradient <NAME>  Apply color gradient: rainbow, sunset, cyberpunk, synthwave, fire, ice, matrix, dracula,
+                           or custom hex colours: \"#ff007f,#7928ca,#00dfd8\"
         --git              Display current git repository statistics
         --completion <SH>  Generate shell completion (bash, zsh, fish)
     -i, --image <PATH>     Display a graphic image (PNG/Sixel) using Kitty Graphics Protocol
@@ -599,7 +602,7 @@ pub fn parse(args: &[String]) -> Parsed {
                         cfg.gradient = Some(g);
                     } else {
                         return Parsed::Error(format!(
-                            "unknown gradient '{v}'. Available gradients: rainbow, sunset, cyberpunk, synthwave, fire, ice, matrix, dracula."
+                            "unknown gradient '{v}'. Available gradients: rainbow, sunset, cyberpunk, synthwave, fire, ice, matrix, dracula, or 1-8 hex colours such as \"#ff007f,#00dfd8\"."
                         ));
                     }
                     i += 1;
@@ -812,9 +815,38 @@ const KNOWN_CONFIG_KEYS: &[&str] = &[
 
 fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     if let Some(tbl) = v.as_table() {
-        for k in tbl.keys() {
-            if !KNOWN_CONFIG_KEYS.contains(&k.as_str()) {
+        for (k, val) in tbl {
+            let lower_k = k.to_ascii_lowercase();
+            if !KNOWN_CONFIG_KEYS.contains(&k.as_str())
+                && !crate::modules::ALL_MODULE_IDS.contains(&lower_k.as_str())
+                && k != "values"
+            {
                 eprintln!("omnifetch: warning: unknown config key '{k}' in config file");
+            } else if crate::modules::ALL_MODULE_IDS.contains(&lower_k.as_str()) {
+                let val_str = match val {
+                    crate::toml::TomlValue::String(s) => Some(s.clone()),
+                    crate::toml::TomlValue::Integer(i) => Some(i.to_string()),
+                    crate::toml::TomlValue::Float(f) => Some(f.to_string()),
+                    crate::toml::TomlValue::Boolean(b) => Some(b.to_string()),
+                    _ => None,
+                };
+                if let Some(s) = val_str {
+                    cfg.format.insert(lower_k, s);
+                }
+            }
+        }
+    }
+    if let Some(vals) = v.get("values").and_then(crate::toml::TomlValue::as_table) {
+        for (k, val) in vals {
+            let val_str = match val {
+                crate::toml::TomlValue::String(s) => Some(s.clone()),
+                crate::toml::TomlValue::Integer(i) => Some(i.to_string()),
+                crate::toml::TomlValue::Float(f) => Some(f.to_string()),
+                crate::toml::TomlValue::Boolean(b) => Some(b.to_string()),
+                _ => None,
+            };
+            if let Some(s) = val_str {
+                cfg.format.insert(k.to_ascii_lowercase(), s);
             }
         }
     }
@@ -904,7 +936,7 @@ fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
             cfg.gradient = Some(preset);
         } else {
             eprintln!(
-                "omnifetch: warning: unknown gradient '{gr}' in config. Available gradients: rainbow, sunset, cyberpunk, synthwave, fire, ice, matrix, dracula."
+                "omnifetch: warning: unknown gradient '{gr}' in config. Available gradients: rainbow, sunset, cyberpunk, synthwave, fire, ice, matrix, dracula, or 1-8 hex colours such as \"#ff007f,#00dfd8\"."
             );
         }
     }
@@ -961,8 +993,15 @@ fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     }
     if let Some(fmt) = v.get("format").and_then(crate::toml::TomlValue::as_table) {
         for (k, val) in fmt {
-            if let Some(s) = val.as_str() {
-                cfg.format.insert(k.clone(), s.to_string());
+            let val_str = match val {
+                crate::toml::TomlValue::String(s) => Some(s.clone()),
+                crate::toml::TomlValue::Integer(i) => Some(i.to_string()),
+                crate::toml::TomlValue::Float(f) => Some(f.to_string()),
+                crate::toml::TomlValue::Boolean(b) => Some(b.to_string()),
+                _ => None,
+            };
+            if let Some(s) = val_str {
+                cfg.format.insert(k.to_ascii_lowercase(), s);
             }
         }
     }
@@ -973,6 +1012,7 @@ fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
             && let Some(c) = Color::parse(k)
         {
             cfg.style.key = c;
+            cfg.style_overrides.key = Some(c);
         }
         if let Some(t) = style
             .get("title_color")
@@ -980,6 +1020,7 @@ fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
             && let Some(c) = Color::parse(t)
         {
             cfg.style.title = c;
+            cfg.style_overrides.title = Some(c);
         }
         if let Some(val) = style
             .get("value_color")
@@ -987,6 +1028,7 @@ fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
             && let Some(c) = Color::parse(val)
         {
             cfg.style.value = c;
+            cfg.style_overrides.value = Some(c);
         }
         if let Some(b) = style
             .get("bold_key")
@@ -1476,5 +1518,29 @@ weather_host = "test.wttr.in"
             }
             _ => panic!("failed to parse flag with trailing nbsp"),
         }
+    }
+
+    #[test]
+    fn test_module_overrides_top_level_and_tables() {
+        let scratch = ScratchConfig::new("mod_overrides");
+        let toml_data = r#"
+os = "Bubuntu x228_1337"
+gpu = "2x NVIDIA RTX 5090"
+
+[values]
+host = "WRX90 Workstation"
+
+[format]
+kernel = "7.1.6-zen-custom"
+"#;
+        std::fs::write(&scratch.0, toml_data).unwrap();
+        let cfg = match parse(&["-c".to_string(), scratch.path()]) {
+            Parsed::Run(c) => *c,
+            other => panic!("expected Parsed::Run, got {other:?}"),
+        };
+        assert_eq!(cfg.format("os"), Some("Bubuntu x228_1337"));
+        assert_eq!(cfg.format("gpu"), Some("2x NVIDIA RTX 5090"));
+        assert_eq!(cfg.format("host"), Some("WRX90 Workstation"));
+        assert_eq!(cfg.format("kernel"), Some("7.1.6-zen-custom"));
     }
 }

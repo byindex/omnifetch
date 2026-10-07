@@ -87,8 +87,6 @@ pub fn to_text(
 
     // Separator length comes from the title, so it waits for the title line.
     let mut separator: Option<String> = None;
-    let auto_category_breaks = cfg.preset.as_deref() != Some("compact");
-    let mut last_category: Option<u8> = None;
 
     for (id, out) in results {
         let Some(out) = out else {
@@ -109,7 +107,6 @@ pub fn to_text(
                 category: Some(0),
                 is_divider: false,
             });
-            last_category = Some(0);
             continue;
         }
         if *id == "break" {
@@ -129,21 +126,6 @@ pub fn to_text(
         }
 
         let cat = module_category(id);
-        if auto_category_breaks {
-            if let Some(prev) = last_category
-                && prev != cat
-                && !lines.is_empty()
-                && !lines.last().map(|l| l.is_divider).unwrap_or(false)
-            {
-                lines.push(Line {
-                    key: None,
-                    value: String::new(),
-                    category: None,
-                    is_divider: true,
-                });
-            }
-            last_category = Some(cat);
-        }
 
         let key_name = cfg.key_label(&out.name);
         let icon = if cfg.nerd {

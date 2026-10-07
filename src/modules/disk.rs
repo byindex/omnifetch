@@ -24,6 +24,10 @@ impl Module for Disk {
             .format("disk")
             .unwrap_or("{mount} {used} / {total} {bar} ({pct}%)");
 
+        if !tmpl.contains('{') {
+            return Some(ModuleOutput::new("Disk", tmpl.to_string()));
+        }
+
         let lines: Vec<String> = mounts
             .iter()
             .map(|m| {

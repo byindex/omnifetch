@@ -45,6 +45,12 @@ bash, zsh и fish.
 
 ## Установка
 
+### Быстрая установка (Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/byindex/omnifetch/main/install.sh | bash
+```
+
 ### Cargo (crates.io)
 
 ```bash

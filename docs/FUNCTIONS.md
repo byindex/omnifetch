@@ -8,11 +8,21 @@ memory = "{f} free of 1337GB"
 # -> 4.24 GiB free of 1337GB
 ```
 
-A module with a single value, such as `os` or `host`, prints that value as-is and ignores `[format]`.
+Any module (including `os`, `host`, `kernel`, `gpu`, `chassis`, etc.) can be overridden with arbitrary text or customized with a template via `[format]`, `[values]`, or directly at the top level of the config file (e.g. `os = "Bubuntu x228_1337"`).
 
 ---
 
 ## 1. Module Variables
+
+### `os`
+
+| Variable | Description | Example |
+| :--- | :--- | :--- |
+| `{name}`, `{n}` | Distribution name | `Arch Linux` |
+| `{version}`, `{v}` | Distribution version | `rolling` |
+| `{arch}`, `{a}` | System architecture | `x86_64` |
+| `{id}` | Distribution identifier | `arch` |
+| `{val}`, `{value}` | Original full value | `Arch Linux rolling [x86_64]` |
 
 ### `memory`
 

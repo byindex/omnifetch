@@ -30,13 +30,30 @@ yay -S omnifetch-git
 
 Statically linked release archives with shell completions are available on [GitHub Releases](https://github.com/byindex/omnifetch/releases).
 
-Download and install:
+### Automated Install
 
 ```bash
 tar -xzf omnifetch-v*-linux-x86_64.tar.gz
 cd omnifetch-v*-linux-x86_64
+sudo ./install.sh
+```
+
+Or install directly in one command via curl:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/byindex/omnifetch/main/install.sh | bash
+```
+
+### Manual Install
+
+```bash
 sudo install -Dm755 omnifetch /usr/local/bin/omnifetch
 sudo ./setup-aliases.sh   # optional shell aliases wizard
+
+# Optional: install shell completions
+sudo install -Dm644 completions/omnifetch.bash /usr/share/bash-completion/completions/omnifetch
+sudo install -Dm644 completions/_omnifetch /usr/share/zsh/site-functions/_omnifetch
+sudo install -Dm644 completions/omnifetch.fish /usr/share/fish/vendor_completions.d/omnifetch.fish
 ```
 
 ## 4. Building from Source

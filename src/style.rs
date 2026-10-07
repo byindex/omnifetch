@@ -102,6 +102,43 @@ impl Default for Style {
     }
 }
 
+/// Colours set explicitly in the `[style]` table. A theme replaces the whole
+/// `Style`, so these are re-applied on top of it afterwards: a theme plus a
+/// custom `key_color` gives the theme with that one colour changed.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct StyleOverrides {
+    pub key: Option<Color>,
+    pub title: Option<Color>,
+    pub value: Option<Color>,
+}
+
+impl StyleOverrides {
+    pub fn apply(&self, style: &mut Style) {
+        if let Some(c) = self.key {
+            style.key = c;
+        }
+        if let Some(c) = self.title {
+            style.title = c;
+        }
+        if let Some(c) = self.value {
+            style.value = c;
+        }
+    }
+}
+
+impl Color {
+    /// Foreground escape sequence for this colour (empty for `Default`).
+    pub fn fg_escape(self) -> String {
+        match self {
+            Color::Rgb(r, g, b) => format!("\x1b[38;2;{r};{g};{b}m"),
+            c => match c.code() {
+                Some(39) | None => String::new(),
+                Some(code) => format!("\x1b[{code}m"),
+            },
+        }
+    }
+}
+
 pub struct Painter {
     enabled: bool,
 }
@@ -255,6 +292,9 @@ pub const THEMES: &[&str] = &[
     "rose-pine",
 ];
 
+/// Maximum number of colour stops a custom gradient may have.
+pub const MAX_GRADIENT_STOPS: usize = 8;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GradientPreset {
     Rainbow,
@@ -265,11 +305,25 @@ pub enum GradientPreset {
     Ice,
     Matrix,
     Dracula,
+    /// User-defined gradient from hex colours, e.g. `"#ff007f,#7928ca,#00dfd8"`.
+    /// Stored inline so the type stays `Copy`.
+    Custom {
+        stops: [(u8, u8, u8); MAX_GRADIENT_STOPS],
+        len: u8,
+    },
 }
 
 impl GradientPreset {
     pub fn parse(s: &str) -> Option<Self> {
-        match s.to_ascii_lowercase().replace(['-', '_'], "").as_str() {
+        let trimmed = s.trim();
+        if trimmed.contains(',') || trimmed.starts_with('#') {
+            return Self::parse_custom(trimmed);
+        }
+        match trimmed
+            .to_ascii_lowercase()
+            .replace(['-', '_'], "")
+            .as_str()
+        {
             "rainbow" => Some(Self::Rainbow),
             "sunset" => Some(Self::Sunset),
             "cyberpunk" => Some(Self::Cyberpunk),
@@ -282,8 +336,57 @@ impl GradientPreset {
         }
     }
 
-    pub fn colors(&self) -> &'static [(u8, u8, u8)] {
+    /// Parses a comma- or space-separated list of 1..=8 hex colours.
+    pub fn parse_custom(s: &str) -> Option<Self> {
+        let mut stops = [(0u8, 0u8, 0u8); MAX_GRADIENT_STOPS];
+        let mut len = 0usize;
+        for part in s.split([',', ' ']).filter(|p| !p.trim().is_empty()) {
+            if len == MAX_GRADIENT_STOPS {
+                return None;
+            }
+            let p = part.trim();
+            let hex = p.strip_prefix('#').unwrap_or(p);
+            if hex.len() != 6 {
+                return None;
+            }
+            match Color::parse(hex)? {
+                Color::Rgb(r, g, b) => stops[len] = (r, g, b),
+                _ => return None,
+            }
+            len += 1;
+        }
+        if len == 0 {
+            return None;
+        }
+        Some(Self::Custom {
+            stops,
+            len: len as u8,
+        })
+    }
+
+    /// The canonical config-file spelling of this gradient.
+    pub fn to_config_string(&self) -> String {
         match self {
+            Self::Rainbow => "rainbow".into(),
+            Self::Sunset => "sunset".into(),
+            Self::Cyberpunk => "cyberpunk".into(),
+            Self::Synthwave => "synthwave".into(),
+            Self::Fire => "fire".into(),
+            Self::Ice => "ice".into(),
+            Self::Matrix => "matrix".into(),
+            Self::Dracula => "dracula".into(),
+            Self::Custom { .. } => self
+                .colors()
+                .iter()
+                .map(|(r, g, b)| format!("#{r:02x}{g:02x}{b:02x}"))
+                .collect::<Vec<_>>()
+                .join(","),
+        }
+    }
+
+    pub fn colors(&self) -> &[(u8, u8, u8)] {
+        match self {
+            Self::Custom { stops, len } => &stops[..*len as usize],
             Self::Rainbow => &[
                 (255, 0, 0),
                 (255, 127, 0),
@@ -397,5 +500,38 @@ mod tests {
         assert!(get_theme("tokyo-night").is_some());
         assert!(get_theme("nord").is_some());
         assert!(GradientPreset::parse("cyberpunk").is_some());
+    }
+
+    #[test]
+    fn custom_hex_gradient_parses_and_round_trips() {
+        let g = GradientPreset::parse("#ff007f, #7928ca,#00dfd8").unwrap();
+        assert_eq!(g.colors(), &[(255, 0, 127), (121, 40, 202), (0, 223, 216)]);
+        assert_eq!(g.to_config_string(), "#ff007f,#7928ca,#00dfd8");
+        assert_eq!(GradientPreset::parse(&g.to_config_string()), Some(g));
+        assert_eq!(g.sample(0.0), (255, 0, 127));
+        assert_eq!(g.sample(1.0), (0, 223, 216));
+        // a single colour is a solid fill
+        assert!(GradientPreset::parse("#123456").is_some());
+    }
+
+    #[test]
+    fn custom_hex_gradient_rejects_bad_input() {
+        assert!(GradientPreset::parse("#ff00,#00ff00").is_none());
+        assert!(GradientPreset::parse("red,blue").is_none());
+        assert!(GradientPreset::parse(",").is_none());
+        let nine = vec!["#000000"; 9].join(",");
+        assert!(GradientPreset::parse(&nine).is_none());
+    }
+
+    #[test]
+    fn style_overrides_win_over_theme() {
+        let mut s = get_theme("nord").unwrap().style;
+        let o = StyleOverrides {
+            key: Some(Color::Rgb(1, 2, 3)),
+            ..Default::default()
+        };
+        o.apply(&mut s);
+        assert_eq!(s.key, Color::Rgb(1, 2, 3));
+        assert_eq!(s.title, get_theme("nord").unwrap().style.title);
     }
 }

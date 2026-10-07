@@ -124,6 +124,7 @@ fn main() {
     if let Some(ref th) = cfg.theme {
         if let Some(theme) = omnifetch::style::get_theme(th) {
             cfg.style = theme.style;
+            cfg.style_overrides.apply(&mut cfg.style);
             cfg.bar.fill = theme.bar_fill.to_string();
             cfg.bar.empty = theme.bar_empty.to_string();
         } else {
@@ -158,16 +159,49 @@ fn main() {
         if let Some(ref c) = cache
             && cache::is_static(m.id())
             && let Some(cached) = c.modules.get(m.id())
+            && cfg.format(m.id()).is_none()
         {
             return (m.id(), cached.clone(), 0);
         }
-        if cfg.timing {
+        let (id, mut out, us) = if cfg.timing {
             let t = std::time::Instant::now();
             let out = m.run();
             (m.id(), out, t.elapsed().as_micros())
         } else {
             (m.id(), m.run(), 0)
+        };
+
+        if let Some(tmpl) = cfg.format(id) {
+            const MODULES_WITH_OWN_FORMAT: &[&str] = &[
+                "title", "uptime", "cpu", "cputemp", "cpuusage", "memory", "swap", "disk",
+                "battery", "wifi", "netio", "cursor", "media", "custom", "command", "os",
+            ];
+            if !MODULES_WITH_OWN_FORMAT.contains(&id) {
+                let mut ctx = omnifetch::template::Context::new(id);
+                if let Some(ref output) = out {
+                    if let Some(f0) = output.fields.first() {
+                        ctx.set_str("val", f0.value.clone());
+                        ctx.set_str("value", f0.value.clone());
+                        ctx.set_str("v", f0.value.clone());
+                    }
+                    ctx.set_str("name", output.name.clone());
+                    ctx.set_str("n", output.name.clone());
+                    for f in &output.fields {
+                        if !f.label.is_empty() {
+                            ctx.set_str(&f.label.to_ascii_lowercase(), f.value.clone());
+                        }
+                    }
+                }
+                let formatted = omnifetch::template::render_template(tmpl, &ctx);
+                out = Some(omnifetch::module::ModuleOutput::new(m.name(), formatted));
+            } else if out.is_none() {
+                let ctx = omnifetch::template::Context::new(id);
+                let formatted = omnifetch::template::render_template(tmpl, &ctx);
+                out = Some(omnifetch::module::ModuleOutput::new(m.name(), formatted));
+            }
         }
+
+        (id, out, us)
     };
 
     let started = if cfg.timing {
@@ -182,6 +216,7 @@ fn main() {
         if let Some(ref c) = cache
             && cache::is_static(m.id())
             && let Some(cached) = c.modules.get(m.id())
+            && cfg.format(m.id()).is_none()
         {
             timed_slots[i] = Some((m.id(), cached.clone(), 0));
             continue;

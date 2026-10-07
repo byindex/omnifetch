@@ -449,27 +449,23 @@ pub fn default_modules() -> Vec<BoxedModule> {
         // 1. Header
         Box::new(title::Title),
         Box::new(separator::Separator),
-        Box::new(break_::Break),
         // 2. System
         Box::new(os::Os),
         Box::new(host::Host),
         Box::new(kernel::Kernel),
         Box::new(uptime::Uptime),
         Box::new(packages::Packages),
-        Box::new(break_::Break),
         // 3. Desktop
         Box::new(shell::Shell),
         Box::new(de::De),
         Box::new(wm::Wm),
         Box::new(terminal::Terminal),
-        Box::new(break_::Break),
         // 4. Hardware
         Box::new(cpu::Cpu),
         Box::new(gpu::Gpu),
         Box::new(memory::Memory),
         Box::new(swap::Swap),
         Box::new(disk::Disk),
-        Box::new(break_::Break),
         // 5. Colors
         Box::new(colors::Colors),
     ]
