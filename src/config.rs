@@ -813,7 +813,7 @@ const KNOWN_CONFIG_KEYS: &[&str] = &[
     "style",
 ];
 
-fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
+pub(crate) fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     if let Some(tbl) = v.as_table() {
         for (k, val) in tbl {
             let lower_k = k.to_ascii_lowercase();
@@ -961,7 +961,24 @@ fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     {
         cfg.quotes_file = Some(PathBuf::from(f));
     }
-    if let Some(list) = v.get("modules").and_then(crate::toml::TomlValue::as_array) {
+    let modules_array = v
+        .get("modules")
+        .and_then(crate::toml::TomlValue::as_array)
+        .or_else(|| {
+            if let Some(tbl) = v.as_table() {
+                for sub_val in tbl.values() {
+                    if let Some(sub_tbl) = sub_val.as_table()
+                        && let Some(arr) = sub_tbl
+                            .get("modules")
+                            .and_then(crate::toml::TomlValue::as_array)
+                    {
+                        return Some(arr);
+                    }
+                }
+            }
+            None
+        });
+    if let Some(list) = modules_array {
         cfg.modules = Some(
             list.iter()
                 .filter_map(crate::toml::TomlValue::as_str)
@@ -1542,5 +1559,36 @@ kernel = "7.1.6-zen-custom"
         assert_eq!(cfg.format("gpu"), Some("2x NVIDIA RTX 5090"));
         assert_eq!(cfg.format("host"), Some("WRX90 Workstation"));
         assert_eq!(cfg.format("kernel"), Some("7.1.6-zen-custom"));
+    }
+
+    #[test]
+    fn test_modules_under_subtable_fallback() {
+        let scratch = ScratchConfig::new("modules_subtable_fallback");
+        let toml_data = r#"
+logo = "auto"
+
+[border]
+enabled = false
+title_align = "left"
+
+modules = [
+    "os",
+    "kernel",
+    "uptime",
+]
+"#;
+        std::fs::write(&scratch.0, toml_data).unwrap();
+        let cfg = match parse(&["-c".to_string(), scratch.path()]) {
+            Parsed::Run(c) => *c,
+            other => panic!("expected Parsed::Run, got {other:?}"),
+        };
+        assert_eq!(
+            cfg.modules,
+            Some(vec![
+                "os".to_string(),
+                "kernel".to_string(),
+                "uptime".to_string()
+            ])
+        );
     }
 }
