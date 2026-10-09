@@ -515,68 +515,89 @@ pub fn meminfo() -> MemInfo {
     static CACHED: std::sync::OnceLock<MemInfo> = std::sync::OnceLock::new();
     *CACHED.get_or_init(|| {
         let mut m = MemInfo::default();
-        let mut buf = [0u8; 4096];
-        let Some(n) = read_bytes_into(Path::new("/proc/meminfo"), &mut buf) else {
-            return m;
+        let mut buf = [0u8; 2048];
+        let fd = unsafe {
+            libc::open(
+                b"/proc/meminfo\0".as_ptr() as *const libc::c_char,
+                libc::O_RDONLY | libc::O_CLOEXEC,
+            )
         };
-        let Ok(content) = std::str::from_utf8(&buf[..n]) else {
+        if fd < 0 {
             return m;
-        };
+        }
+        let n = unsafe { libc::read(fd, buf.as_mut_ptr() as *mut libc::c_void, buf.len()) };
+        unsafe { libc::close(fd) };
+        if n <= 0 {
+            return m;
+        }
+        let slice = &buf[..n as usize];
         let mut mask = 0u8;
-        for line in content.lines() {
-            let Some((k, v)) = line.split_once(':') else {
-                continue;
-            };
-            #[inline(always)]
-            fn parse_first_num(s: &str) -> u64 {
-                let bytes = s.trim_start().as_bytes();
-                let mut n = 0u64;
-                for &b in bytes {
-                    if b.is_ascii_digit() {
-                        n = n * 10 + (b - b'0') as u64;
-                    } else {
-                        break;
+
+        #[inline(always)]
+        fn parse_num(slice: &[u8]) -> u64 {
+            let mut num = 0u64;
+            let mut i = 0;
+            while i < slice.len() && (slice[i] == b' ' || slice[i] == b'\t') {
+                i += 1;
+            }
+            while i < slice.len() && slice[i].is_ascii_digit() {
+                num = num * 10 + (slice[i] - b'0') as u64;
+                i += 1;
+            }
+            num
+        }
+
+        let mut pos = 0;
+        while pos < slice.len() {
+            let line_end = slice[pos..]
+                .iter()
+                .position(|&b| b == b'\n')
+                .map(|p| pos + p)
+                .unwrap_or(slice.len());
+            let line = &slice[pos..line_end];
+            pos = line_end + 1;
+
+            if let Some(colon) = line.iter().position(|&b| b == b':') {
+                let key = &line[..colon];
+                let val = &line[colon + 1..];
+                match key {
+                    b"MemTotal" => {
+                        m.total_kb = parse_num(val);
+                        mask |= 1 << 0;
                     }
+                    b"MemFree" => {
+                        m.free_kb = parse_num(val);
+                        mask |= 1 << 1;
+                    }
+                    b"MemAvailable" => {
+                        m.available_kb = parse_num(val);
+                        mask |= 1 << 2;
+                    }
+                    b"Buffers" => {
+                        m.buffers_kb = parse_num(val);
+                        mask |= 1 << 3;
+                    }
+                    b"Cached" => {
+                        m.cached_kb = parse_num(val);
+                        mask |= 1 << 4;
+                    }
+                    b"Shmem" => {
+                        m.shared_kb = parse_num(val);
+                        mask |= 1 << 5;
+                    }
+                    b"SwapTotal" => {
+                        m.swap_total_kb = parse_num(val);
+                        mask |= 1 << 6;
+                    }
+                    b"SwapFree" => {
+                        m.swap_free_kb = parse_num(val);
+                        mask |= 1 << 7;
+                    }
+                    _ => {}
                 }
-                n
-            }
-            match k {
-                "MemTotal" => {
-                    m.total_kb = parse_first_num(v);
-                    mask |= 1 << 0;
+                if mask == 0xFF {
+                    break;
                 }
-                "MemFree" => {
-                    m.free_kb = parse_first_num(v);
-                    mask |= 1 << 1;
-                }
-                "MemAvailable" => {
-                    m.available_kb = parse_first_num(v);
-                    mask |= 1 << 2;
-                }
-                "Buffers" => {
-                    m.buffers_kb = parse_first_num(v);
-                    mask |= 1 << 3;
-                }
-                "Cached" => {
-                    m.cached_kb = parse_first_num(v);
-                    mask |= 1 << 4;
-                }
-                "Shmem" => {
-                    m.shared_kb = parse_first_num(v);
-                    mask |= 1 << 5;
-                }
-                "SwapTotal" => {
-                    m.swap_total_kb = parse_first_num(v);
-                    mask |= 1 << 6;
-                }
-                "SwapFree" => {
-                    m.swap_free_kb = parse_first_num(v);
-                    mask |= 1 << 7;
-                }
-                _ => {}
-            }
-            if mask == 0xFF {
-                break;
             }
         }
         m

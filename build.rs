@@ -92,4 +92,5 @@ fn main() {
 
     fs::write(&dest, code).unwrap();
     println!("cargo:rerun-if-changed=assets");
+    println!("cargo:rerun-if-changed=build.rs");
 }

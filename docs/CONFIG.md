@@ -100,6 +100,36 @@ You can override or customize the output of any module (useful for testing setup
 
 Even if a module does not detect any hardware on the current machine, the specified value will be rendered.
 
+## Unquoted Identifiers & Bare Words
+
+omnifetch supports clean, unquoted identifiers (`bare words`) for global settings, modes, colors, themes, and module lists:
+
+```toml
+# Global options without quotes:
+logo = auto               # auto, mini, none
+theme = dracula           # Sets global omnifetch color palette
+preset = modern           # modern, compact, etc.
+modules = [ os, kernel, uptime, break, shell, terminal, cpu, memory, disk, colors ]
+
+[style]
+theme = nord
+key_color = cyan
+title_color = magenta
+
+# Quoted strings are used for custom text and module overrides:
+os = "Bubuntu x228_1337"
+theme = "Adwaita-Dark"    # Quoted string overrides the desktop theme module output!
+host = "WRX90 Workstation"
+```
+
+### Theme Setting vs `theme` Module
+
+To avoid naming conflicts between the global color palette and the desktop GTK/Qt `theme` module:
+- `theme = dracula` (**unquoted bare identifier**) sets the global color palette of omnifetch.
+- `theme = "Adwaita-Dark"` (**quoted string**) overrides the output of the desktop `theme` module.
+- Inside `[style]`, `theme = dracula` sets the UI theme palette.
+- Inside `[values]` or `[format]`, `theme = "Adwaita-Dark"` overrides the module value.
+
 ## Custom and Command Modules
 
 To use the `custom` and `command` modules:

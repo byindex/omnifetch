@@ -1,7 +1,6 @@
 use crate::cmd;
 use crate::module::{Module, ModuleOutput};
 use crate::sys;
-use std::path::Path;
 
 pub struct Shell;
 
@@ -101,14 +100,39 @@ fn write_proc_pid_path<'a>(buf: &'a mut [u8; 32], pid: u32, suffix: &[u8]) -> Op
 fn get_ppid(pid: u32) -> Option<u32> {
     let mut buf = [0u8; 512];
     let mut path_buf = [0u8; 32];
-    let path = write_proc_pid_path(&mut path_buf, pid, b"/stat")?;
-    let n = sys::read_bytes_into(Path::new(path), &mut buf)?;
-    let content = std::str::from_utf8(&buf[..n]).ok()?;
-    let rparen = content.rfind(')')?;
-    let rest = content.get(rparen + 1..)?.trim_start();
-    let mut parts = rest.split_whitespace();
-    let _state = parts.next()?;
-    parts.next()?.parse().ok()
+    let path = write_proc_pid_path(&mut path_buf, pid, b"/stat\0")?;
+    let fd = unsafe {
+        libc::open(
+            path.as_ptr() as *const libc::c_char,
+            libc::O_RDONLY | libc::O_CLOEXEC,
+        )
+    };
+    if fd < 0 {
+        return None;
+    }
+    let n = unsafe { libc::read(fd, buf.as_mut_ptr() as *mut libc::c_void, buf.len()) };
+    unsafe { libc::close(fd) };
+    if n <= 0 {
+        return None;
+    }
+    let n = n as usize;
+    let rparen = buf[..n].iter().rposition(|&b| b == b')')?;
+    let mut i = rparen + 1;
+    while i < n && buf[i].is_ascii_whitespace() {
+        i += 1;
+    }
+    while i < n && !buf[i].is_ascii_whitespace() {
+        i += 1;
+    }
+    while i < n && buf[i].is_ascii_whitespace() {
+        i += 1;
+    }
+    let mut ppid = 0u32;
+    while i < n && buf[i].is_ascii_digit() {
+        ppid = ppid * 10 + (buf[i] - b'0') as u32;
+        i += 1;
+    }
+    (ppid > 0).then_some(ppid)
 }
 
 fn get_proc_name(pid: u32) -> Option<String> {
@@ -133,11 +157,24 @@ fn get_proc_name(pid: u32) -> Option<String> {
         }
     }
     let mut comm_buf = [0u8; 32];
-    if let Some(comm_str) = write_proc_pid_path(&mut comm_buf, pid, b"/comm")
-        && let Some(comm) = sys::read_trim(comm_str)
-        && !comm.is_empty()
-    {
-        return Some(comm);
+    if let Some(comm_str) = write_proc_pid_path(&mut comm_buf, pid, b"/comm\0") {
+        let fd = unsafe {
+            libc::open(
+                comm_str.as_ptr() as *const libc::c_char,
+                libc::O_RDONLY | libc::O_CLOEXEC,
+            )
+        };
+        if fd >= 0 {
+            let mut buf = [0u8; 64];
+            let n = unsafe { libc::read(fd, buf.as_mut_ptr() as *mut libc::c_void, buf.len()) };
+            unsafe { libc::close(fd) };
+            if n > 0 {
+                let s = std::str::from_utf8(&buf[..n as usize]).ok()?.trim();
+                if !s.is_empty() {
+                    return Some(s.to_string());
+                }
+            }
+        }
     }
     None
 }

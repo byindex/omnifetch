@@ -5,6 +5,7 @@ use std::ops::Index;
 #[derive(Debug, Clone, PartialEq)]
 pub enum TomlValue {
     String(String),
+    Ident(String),
     Integer(i64),
     Float(f64),
     Boolean(bool),
@@ -29,9 +30,31 @@ impl TomlValue {
 
     pub fn as_str(&self) -> Option<&str> {
         match self {
+            TomlValue::String(s) | TomlValue::Ident(s) => Some(s.as_str()),
+            _ => None,
+        }
+    }
+
+    pub fn as_ident(&self) -> Option<&str> {
+        match self {
+            TomlValue::Ident(s) => Some(s.as_str()),
+            _ => None,
+        }
+    }
+
+    pub fn as_quoted_str(&self) -> Option<&str> {
+        match self {
             TomlValue::String(s) => Some(s.as_str()),
             _ => None,
         }
+    }
+
+    pub fn is_ident(&self) -> bool {
+        matches!(self, TomlValue::Ident(_))
+    }
+
+    pub fn is_quoted_str(&self) -> bool {
+        matches!(self, TomlValue::String(_))
     }
 
     pub fn as_bool(&self) -> Option<bool> {
@@ -480,6 +503,13 @@ impl Parser {
             return Ok(TomlValue::Float(f));
         }
 
+        if raw
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '_' || c == '-' || c == '.')
+        {
+            return Ok(TomlValue::Ident(raw));
+        }
+
         Err(self.err(format!("invalid value: {raw:?}")))
     }
 
@@ -864,5 +894,34 @@ mod tests {
             val.get("raw").and_then(TomlValue::as_str),
             Some("no\\escapes\\here")
         );
+    }
+
+    #[test]
+    fn parse_unquoted_identifiers_and_arrays() {
+        let input = r#"
+            theme = dracula
+            logo = auto
+            preset = modern
+            modules = [ os, kernel, uptime, break, colors ]
+            quoted_theme = "Adwaita-Dark"
+        "#;
+        let val = parse(input).unwrap();
+        assert_eq!(
+            val.get("theme").and_then(TomlValue::as_ident),
+            Some("dracula")
+        );
+        assert!(val.get("theme").unwrap().is_ident());
+        assert!(!val.get("theme").unwrap().is_quoted_str());
+
+        assert_eq!(
+            val.get("quoted_theme").and_then(TomlValue::as_quoted_str),
+            Some("Adwaita-Dark")
+        );
+        assert!(val.get("quoted_theme").unwrap().is_quoted_str());
+        assert!(!val.get("quoted_theme").unwrap().is_ident());
+
+        let mods = val.get("modules").and_then(TomlValue::as_array).unwrap();
+        let mod_names: Vec<&str> = mods.iter().filter_map(TomlValue::as_str).collect();
+        assert_eq!(mod_names, vec!["os", "kernel", "uptime", "break", "colors"]);
     }
 }

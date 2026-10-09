@@ -2,20 +2,18 @@ use crate::ProgressBar;
 use crate::config;
 use crate::sys;
 use std::cell::Cell;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Default)]
 pub struct TemplateValue {
-    pub text: String,
+    pub text: Option<String>,
     pub bytes: Option<u64>,
     pub number: Option<f64>,
 }
 
 impl TemplateValue {
     pub fn from_text(s: impl Into<String>) -> Self {
-        let text = s.into();
         Self {
-            text,
+            text: Some(s.into()),
             bytes: None,
             number: None,
         }
@@ -23,7 +21,7 @@ impl TemplateValue {
 
     pub fn from_bytes(b: u64) -> Self {
         Self {
-            text: sys::human_bytes(b),
+            text: None,
             bytes: Some(b),
             number: Some(b as f64),
         }
@@ -31,19 +29,33 @@ impl TemplateValue {
 
     pub fn from_number(n: f64) -> Self {
         Self {
-            text: format!("{n:.0}"),
+            text: None,
             bytes: None,
             number: Some(n),
         }
     }
+
+    pub fn text(&self) -> String {
+        if let Some(ref t) = self.text {
+            t.clone()
+        } else if let Some(b) = self.bytes {
+            sys::human_bytes(b)
+        } else if let Some(n) = self.number {
+            format!("{n:.0}")
+        } else {
+            String::new()
+        }
+    }
 }
+
+use std::borrow::Cow;
 
 pub struct Context {
     pub module_id: &'static str,
     pub used: Cell<Option<u64>>,
     pub total: Option<u64>,
     pub pct: Cell<Option<f64>>,
-    pub vars: HashMap<String, TemplateValue>,
+    pub vars: Vec<(Cow<'static, str>, TemplateValue)>,
 }
 
 impl Context {
@@ -53,7 +65,7 @@ impl Context {
             used: Cell::new(None),
             total: None,
             pct: Cell::new(None),
-            vars: HashMap::new(),
+            vars: Vec::with_capacity(12),
         }
     }
 
@@ -64,81 +76,72 @@ impl Context {
         self
     }
 
-    pub fn set_str(&mut self, key: &str, val: impl Into<String>) -> &mut Self {
-        self.vars
-            .insert(key.to_string(), TemplateValue::from_text(val));
+    pub fn set_str(&mut self, key: impl Into<Cow<'static, str>>, val: impl Into<String>) -> &mut Self {
+        self.vars.push((key.into(), TemplateValue::from_text(val)));
         self
     }
 
-    pub fn set_bytes(&mut self, key: &str, bytes: u64) -> &mut Self {
-        self.vars
-            .insert(key.to_string(), TemplateValue::from_bytes(bytes));
+    pub fn set_bytes(&mut self, key: impl Into<Cow<'static, str>>, bytes: u64) -> &mut Self {
+        self.vars.push((key.into(), TemplateValue::from_bytes(bytes)));
         self
     }
 
-    pub fn set_num(&mut self, key: &str, num: f64) -> &mut Self {
-        self.vars
-            .insert(key.to_string(), TemplateValue::from_number(num));
+    pub fn set_num(&mut self, key: impl Into<Cow<'static, str>>, num: f64) -> &mut Self {
+        self.vars.push((key.into(), TemplateValue::from_number(num)));
         self
     }
 
     pub fn get_val(&self, key: &str) -> Option<&TemplateValue> {
-        self.vars.get(key)
+        self.vars.iter().rev().find(|(k, _)| k.as_ref() == key).map(|(_, v)| v)
     }
 }
 
 pub fn render_template(template: &str, ctx: &Context) -> String {
     let mut out = String::with_capacity(template.len() + 32);
-    let mut chars = template.char_indices().peekable();
-
-    while let Some((_, ch)) = chars.next() {
-        if ch == '{' {
-            if let Some(&(_, '{')) = chars.peek() {
-                chars.next();
+    let bytes = template.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'{' {
+            if i + 1 < bytes.len() && bytes[i + 1] == b'{' {
                 out.push('{');
+                i += 2;
                 continue;
             }
-            // Parse until matching '}'
-            let mut expr = String::new();
-            let mut closed = false;
-            for (_, inner) in chars.by_ref() {
-                if inner == '}' {
-                    closed = true;
-                    break;
+            if let Some(close_rel) = template[i + 1..].find('}') {
+                let expr = &template[i + 1..i + 1 + close_rel];
+                let trimmed = expr.trim();
+                if let Some(val) = eval_expression(trimmed, ctx) {
+                    out.push_str(&val);
+                } else if let Some(color_code) = color_escape(trimmed) {
+                    if config::get().color {
+                        out.push_str(color_code);
+                    }
+                } else {
+                    out.push('{');
+                    out.push_str(expr);
+                    out.push('}');
                 }
-                expr.push(inner);
-            }
-            if !closed {
-                out.push('{');
-                out.push_str(&expr);
+                i = i + 1 + close_rel + 1;
+            } else {
+                out.push_str(&template[i..]);
                 break;
             }
-
-            let trimmed = expr.trim();
-            if let Some(val) = eval_expression(trimmed, ctx) {
-                out.push_str(&val);
-            } else if let Some(color_code) = color_escape(trimmed) {
-                if config::get().color {
-                    out.push_str(color_code);
-                }
-            } else {
-                // Unknown tag, preserve verbatim
-                out.push('{');
-                out.push_str(&expr);
+        } else if bytes[i] == b'}' {
+            if i + 1 < bytes.len() && bytes[i + 1] == b'}' {
                 out.push('}');
+                i += 2;
+                continue;
             }
-        } else if ch == '}' {
-            if let Some(&(_, '}')) = chars.peek() {
-                chars.next();
-                out.push('}');
-            } else {
-                out.push('}');
-            }
+            out.push('}');
+            i += 1;
         } else {
-            out.push(ch);
+            let start = i;
+            while i < bytes.len() && bytes[i] != b'{' && bytes[i] != b'}' {
+                i += 1;
+            }
+            out.push_str(&template[start..i]);
         }
     }
-
     out
 }
 
@@ -148,53 +151,49 @@ where
     F: FnMut(&str) -> Option<String>,
 {
     let mut out = String::with_capacity(template.len() + 16);
-    let mut chars = template.char_indices().peekable();
-
-    while let Some((_, ch)) = chars.next() {
-        if ch == '{' {
-            if let Some(&(_, '{')) = chars.peek() {
-                chars.next();
+    let bytes = template.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'{' {
+            if i + 1 < bytes.len() && bytes[i + 1] == b'{' {
                 out.push('{');
+                i += 2;
                 continue;
             }
-            let mut key = String::new();
-            let mut closed = false;
-            for (_, inner) in chars.by_ref() {
-                if inner == '}' {
-                    closed = true;
-                    break;
+            if let Some(close_rel) = template[i + 1..].find('}') {
+                let key = &template[i + 1..i + 1 + close_rel];
+                if let Some(val) = lookup(key) {
+                    out.push_str(&val);
+                } else if let Some(color_code) = color_escape(key) {
+                    if config::get().color {
+                        out.push_str(color_code);
+                    }
+                } else {
+                    out.push('{');
+                    out.push_str(key);
+                    out.push('}');
                 }
-                key.push(inner);
-            }
-            if !closed {
-                out.push('{');
-                out.push_str(&key);
+                i = i + 1 + close_rel + 1;
+            } else {
+                out.push_str(&template[i..]);
                 break;
             }
-
-            if let Some(val) = lookup(&key) {
-                out.push_str(&val);
-            } else if let Some(color_code) = color_escape(&key) {
-                if config::get().color {
-                    out.push_str(color_code);
-                }
-            } else {
-                out.push('{');
-                out.push_str(&key);
+        } else if bytes[i] == b'}' {
+            if i + 1 < bytes.len() && bytes[i + 1] == b'}' {
                 out.push('}');
+                i += 2;
+                continue;
             }
-        } else if ch == '}' {
-            if let Some(&(_, '}')) = chars.peek() {
-                chars.next();
-                out.push('}');
-            } else {
-                out.push('}');
-            }
+            out.push('}');
+            i += 1;
         } else {
-            out.push(ch);
+            let start = i;
+            while i < bytes.len() && bytes[i] != b'{' && bytes[i] != b'}' {
+                i += 1;
+            }
+            out.push_str(&template[start..i]);
         }
     }
-
     out
 }
 
@@ -257,7 +256,7 @@ fn eval_simple_expression(expr: &str, ctx: &Context) -> Option<String> {
     }
 
     if let Some(val) = ctx.get_val(expr) {
-        return Some(val.text.clone());
+        return Some(val.text());
     }
 
     if expr == "bar" || expr == "b" {
@@ -466,7 +465,7 @@ fn raw_value_text(name: &str, ctx: &Context) -> Option<String> {
     let v = ctx.get_val(name)?;
     match &v.bytes {
         Some(b) => Some(b.to_string()),
-        None => v.text.parse::<f64>().ok().map(|n| n.to_string()),
+        None => v.text().parse::<f64>().ok().map(|n| n.to_string()),
     }
 }
 
@@ -521,7 +520,7 @@ fn resolve_first_arg_as_str(args: &[String], ctx: &Context) -> String {
         return String::new();
     };
     if let Some(val) = ctx.get_val(first) {
-        return val.text.clone();
+        return val.text();
     }
     first.clone()
 }
@@ -532,7 +531,7 @@ fn resolve_first_arg_as_bytes(args: &[String], ctx: &Context) -> Option<u64> {
         if let Some(b) = val.bytes {
             return Some(b);
         }
-        if let Ok(b) = val.text.parse::<u64>() {
+        if let Ok(b) = val.text().parse::<u64>() {
             return Some(b);
         }
     }
@@ -891,8 +890,9 @@ fn resolve_operand(token: &str, ctx: &Context) -> Option<Operand> {
             }
             return Some(Operand::Number(n));
         }
-        if let Ok(n) = v.text.trim_end_matches('%').trim().parse::<f64>() {
-            if v.text.ends_with('%') {
+        let text = v.text();
+        if let Ok(n) = text.trim_end_matches('%').trim().parse::<f64>() {
+            if text.ends_with('%') {
                 return Some(Operand::Percent(n));
             }
             return Some(Operand::Number(n));

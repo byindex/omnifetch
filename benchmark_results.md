@@ -15,58 +15,58 @@ Modules = how many information blocks the command printed.
 
 Command                                Modules   Mean ms    Min ms
 ------------------------------------------------------------------
-omnifetch -p minimal                         4       1.4       0.9
-omnifetch --fast                            19       1.5       1.1
-omnifetch -p compact                        13       1.7       1.3
-omnifetch -p neofetch                       17       1.7       1.3
-omnifetch -p hardware                       14       1.8       1.4
-omnifetch                                   25       1.9       1.4
-omnifetch -p fastfetch                      22       1.9       1.4
-omnifetch -p modern                         19       1.9       1.5
-omnifetch -p detailed                       33       2.3       1.7
-paleofetch                                  11       2.8       2.4
-nitch                                        9       3.0       2.2
-omnifetch --no-cache                        25       3.4       2.2
-pfetch                                       6       4.5       3.5
-catnap                                      16       5.3       4.4
-omnifetch --all                             82       5.4       4.2
-omnifetch --all --no-cache                  82       7.1       5.9
-sysprint                                    23       7.8       6.2
-fastfetch                                   23      16.3      10.7
-macchina                                    16      70.0      47.9
-omnifetch --all --network --no-cache        84     114.0     107.1
-omnifetch --all --network                   84     114.6     106.3
-omnifetch --network                         27     139.2     103.1
-omnifetch --network --no-cache              27     155.7     103.2
-neofetch                                    16     586.6     569.9
+omnifetch -p minimal                         4       3.3       1.6
+omnifetch -p fastfetch                      22       3.7       2.0
+omnifetch -p hardware                       14       3.9       2.0
+omnifetch -p detailed                       33       4.4       2.4
+omnifetch --fast                            19       4.5       1.8
+nitch                                        9       4.9       2.6
+paleofetch                                  11       5.1       2.9
+omnifetch -p neofetch                       17       5.8       2.0
+omnifetch                                   14       6.5       2.5
+omnifetch -p compact                        13       7.2       2.2
+pfetch                                       6       7.3       4.0
+omnifetch --no-cache                        14       7.4       2.6
+omnifetch -p modern                         19       8.4       2.5
+catnap                                      16      10.0       5.1
+sysprint                                    23      17.6       8.0
+omnifetch --all --no-cache                  82      19.4      10.8
+fastfetch                                   23      21.8      12.1
+omnifetch --all                             82      27.3      12.3
+macchina                                    16      70.2      52.7
+omnifetch --network --no-cache              16     149.8     112.0
+omnifetch --all --network                   84     158.9     110.5
+omnifetch --network                         16     163.7     112.8
+omnifetch --all --network --no-cache        84     208.0     123.3
+neofetch                                    16    1485.4    1135.0
 
 
 2. VIA SHELL
 
 Command                                Modules   Mean ms    Min ms
 ------------------------------------------------------------------
-omnifetch                                   25       1.6       1.5
-omnifetch -p hardware                       14       1.8       1.4
-omnifetch -p compact                        13       1.8       1.4
-omnifetch -p fastfetch                      22       1.8       1.4
-omnifetch -p minimal                         4       1.8       1.0
-omnifetch -p modern                         19       1.8       1.5
-omnifetch --fast                            19       1.9       1.1
-omnifetch -p neofetch                       17       1.9       1.4
-omnifetch -p detailed                       33       2.0       1.7
-omnifetch --no-cache                        25       3.0       2.6
-nitch                                        9       3.4       2.3
-paleofetch                                  11       3.4       2.4
-pfetch                                       6       4.1       3.4
-omnifetch --all                             82       4.7       4.3
-catnap                                      16       5.9       4.3
-omnifetch --all --no-cache                  82       6.7       6.0
-sysprint                                    23       7.3       6.1
-fastfetch                                   23      13.6      10.7
-macchina                                    16      49.8      46.6
-omnifetch --all --network                   84     111.4     102.8
-omnifetch --network                         27     120.0     102.4
-omnifetch --network --no-cache              27     132.9     105.2
-omnifetch --all --network --no-cache        84     192.6     104.4
-neofetch                                    16     634.3     595.8
+nitch                                        9       2.2       0.0
+paleofetch                                  11       2.8       0.0
+omnifetch -p minimal                         4       3.6       0.0
+pfetch                                       6       3.8       1.2
+omnifetch -p compact                        13       4.5       0.0
+omnifetch -p neofetch                       17       4.6       0.0
+omnifetch --fast                            19       4.9       0.0
+omnifetch --no-cache                        14       5.0       0.1
+omnifetch -p modern                         19       6.1       0.0
+omnifetch -p fastfetch                      22       6.4       0.4
+catnap                                      16       6.8       2.0
+sysprint                                    23       7.7       4.1
+omnifetch -p detailed                       33       8.0       1.5
+omnifetch                                   14       9.2       0.0
+omnifetch -p hardware                       14       9.8       0.1
+fastfetch                                   23      14.7       9.1
+omnifetch --all                             82      14.9       6.5
+omnifetch --all --no-cache                  82      18.1       8.7
+macchina                                    16      63.9      52.6
+omnifetch --all --network --no-cache        84     148.3     114.1
+omnifetch --network                         16     169.6     109.2
+omnifetch --all --network                   84     186.3     115.9
+omnifetch --network --no-cache              16     193.1     112.2
+neofetch                                    16    1282.5     775.6
 

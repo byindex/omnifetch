@@ -823,8 +823,14 @@ pub(crate) fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
             {
                 eprintln!("omnifetch: warning: unknown config key '{k}' in config file");
             } else if crate::modules::ALL_MODULE_IDS.contains(&lower_k.as_str()) {
+                if lower_k == "theme" {
+                    // Handled specifically: bare ident sets global UI theme, quoted string overrides desktop theme module
+                    continue;
+                }
                 let val_str = match val {
-                    crate::toml::TomlValue::String(s) => Some(s.clone()),
+                    crate::toml::TomlValue::String(s) | crate::toml::TomlValue::Ident(s) => {
+                        Some(s.clone())
+                    }
                     crate::toml::TomlValue::Integer(i) => Some(i.to_string()),
                     crate::toml::TomlValue::Float(f) => Some(f.to_string()),
                     crate::toml::TomlValue::Boolean(b) => Some(b.to_string()),
@@ -839,7 +845,9 @@ pub(crate) fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     if let Some(vals) = v.get("values").and_then(crate::toml::TomlValue::as_table) {
         for (k, val) in vals {
             let val_str = match val {
-                crate::toml::TomlValue::String(s) => Some(s.clone()),
+                crate::toml::TomlValue::String(s) | crate::toml::TomlValue::Ident(s) => {
+                    Some(s.clone())
+                }
                 crate::toml::TomlValue::Integer(i) => Some(i.to_string()),
                 crate::toml::TomlValue::Float(f) => Some(f.to_string()),
                 crate::toml::TomlValue::Boolean(b) => Some(b.to_string()),
@@ -928,8 +936,17 @@ pub(crate) fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     {
         cfg.nerd_icons_only = n;
     }
-    if let Some(th) = v.get("theme").and_then(crate::toml::TomlValue::as_str) {
-        cfg.theme = Some(th.to_string());
+    if let Some(th_val) = v.get("theme") {
+        match th_val {
+            crate::toml::TomlValue::Ident(th) => {
+                cfg.theme = Some(th.to_string());
+                cfg.format.remove("theme");
+            }
+            crate::toml::TomlValue::String(s) => {
+                cfg.format.insert("theme".to_string(), s.clone());
+            }
+            _ => {}
+        }
     }
     if let Some(gr) = v.get("gradient").and_then(crate::toml::TomlValue::as_str) {
         if let Some(preset) = crate::style::GradientPreset::parse(gr) {
@@ -1011,7 +1028,9 @@ pub(crate) fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
     if let Some(fmt) = v.get("format").and_then(crate::toml::TomlValue::as_table) {
         for (k, val) in fmt {
             let val_str = match val {
-                crate::toml::TomlValue::String(s) => Some(s.clone()),
+                crate::toml::TomlValue::String(s) | crate::toml::TomlValue::Ident(s) => {
+                    Some(s.clone())
+                }
                 crate::toml::TomlValue::Integer(i) => Some(i.to_string()),
                 crate::toml::TomlValue::Float(f) => Some(f.to_string()),
                 crate::toml::TomlValue::Boolean(b) => Some(b.to_string()),
@@ -1023,6 +1042,9 @@ pub(crate) fn apply_toml(cfg: &mut Config, v: &crate::toml::TomlValue) {
         }
     }
     if let Some(style) = v.get("style").and_then(crate::toml::TomlValue::as_table) {
+        if let Some(th) = style.get("theme").and_then(crate::toml::TomlValue::as_str) {
+            cfg.theme = Some(th.to_string());
+        }
         if let Some(k) = style
             .get("key_color")
             .and_then(crate::toml::TomlValue::as_str)
@@ -1590,5 +1612,54 @@ modules = [
                 "uptime".to_string()
             ])
         );
+    }
+
+    #[test]
+    fn test_unquoted_theme_and_modules() {
+        let scratch1 = ScratchConfig::new("bare_theme");
+        let toml_data1 = r#"
+theme = dracula
+logo = auto
+modules = [ os, kernel, uptime ]
+"#;
+        std::fs::write(&scratch1.0, toml_data1).unwrap();
+        let cfg1 = match parse(&["-c".to_string(), scratch1.path()]) {
+            Parsed::Run(c) => *c,
+            other => panic!("expected Parsed::Run, got {other:?}"),
+        };
+        assert_eq!(cfg1.theme.as_deref(), Some("dracula"));
+        assert_eq!(cfg1.format("theme"), None);
+        assert_eq!(
+            cfg1.modules,
+            Some(vec![
+                "os".to_string(),
+                "kernel".to_string(),
+                "uptime".to_string()
+            ])
+        );
+
+        let scratch2 = ScratchConfig::new("quoted_theme_override");
+        let toml_data2 = r#"
+theme = "Adwaita-Dark"
+"#;
+        std::fs::write(&scratch2.0, toml_data2).unwrap();
+        let cfg2 = match parse(&["-c".to_string(), scratch2.path()]) {
+            Parsed::Run(c) => *c,
+            other => panic!("expected Parsed::Run, got {other:?}"),
+        };
+        assert_eq!(cfg2.theme, None);
+        assert_eq!(cfg2.format("theme"), Some("Adwaita-Dark"));
+
+        let scratch3 = ScratchConfig::new("style_theme");
+        let toml_data3 = r#"
+[style]
+theme = nord
+"#;
+        std::fs::write(&scratch3.0, toml_data3).unwrap();
+        let cfg3 = match parse(&["-c".to_string(), scratch3.path()]) {
+            Parsed::Run(c) => *c,
+            other => panic!("expected Parsed::Run, got {other:?}"),
+        };
+        assert_eq!(cfg3.theme.as_deref(), Some("nord"));
     }
 }

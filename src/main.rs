@@ -188,7 +188,7 @@ fn main() {
                     ctx.set_str("n", output.name.clone());
                     for f in &output.fields {
                         if !f.label.is_empty() {
-                            ctx.set_str(&f.label.to_ascii_lowercase(), f.value.clone());
+                            ctx.set_str(f.label.to_ascii_lowercase(), f.value.clone());
                         }
                     }
                 }
